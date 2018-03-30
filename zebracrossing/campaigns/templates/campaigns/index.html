@@ -1,0 +1,10 @@
+<h1>Active Campaigns</h1>
+{% if active_campaigns %}
+  <ul>
+{% for campaign in active_campaigns %}
+  <li><a href="/campaigns/{{ campaign.id }}/">{{ campaign }}</a></li>
+{% endfor %}
+  </ul>
+{% else %}
+  <p>No campaigns are currently active</p>
+{% endif %}

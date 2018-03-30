@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.db import models
 
 AD_TYPES = (
@@ -43,9 +45,9 @@ class Campaign(models.Model):
 
     def get_start_date(self):
         booking_sheets = BookingSheet.objects.filter(campaign=self.id)
-        if len(booking_sheet) == 0:
+        if len(booking_sheets) == 0:
             return None
-        start_date = booking_sheets.get(0).start_date;
+        start_date = date.max
         for sheet in booking_sheets:
             if sheet.start_date < start_date:
                 start_date = sheet.start_date
@@ -53,9 +55,9 @@ class Campaign(models.Model):
 
     def get_end_date(self):
         booking_sheets = BookingSheet.objects.filter(campaign=self.id)
-        if len(booking_sheet) == 0:
+        if len(booking_sheets) == 0:
             return None
-        end_date = booking_sheets.get(0).end_date;
+        end_date = date.min
         for sheet in booking_sheets:
             if sheet.end_date > end_date:
                 end_date = sheet.end_date
@@ -69,6 +71,14 @@ class Campaign(models.Model):
             for slot in time_slots:
                 cost += slot.cost
         return cost
+
+    def is_active(self):
+        today = date.today()
+        start_date = self.get_start_date()
+        end_date = self.get_end_date()
+        if start_date == None or end_date == None:
+            return False
+        return start_date <= today and end_date >= today
 
 class CampaignBookingCost(models.Model):
     class Meta:

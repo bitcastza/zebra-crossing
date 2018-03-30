@@ -1,0 +1,14 @@
+<h1>{{ campaign }}</h1>
+<p>
+Client: {{ campaign.client }}<br>
+Ad Agency: {{ campaign.ad_agency }}<br>
+</p>
+
+<h2>Booking Sheets</h2>
+    {% if booking_sheets %}
+      <ul>
+        {% for sheet in booking_sheets %}
+        <li>{{ sheet.start_date }} - {{ sheet.end_date }} ({{ sheet.ad_type }})</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
