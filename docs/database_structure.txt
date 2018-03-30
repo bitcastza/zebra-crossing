@@ -1,0 +1,18 @@
+Campaign:
+ID  Client  Ad Agency
+1   Huawei  SRN
+
+Booking Sheets:
+ID  Material    Platform    Start Date  End Date    Campaign
+1   Image       SM          19/03/2018  25/03/2018  1
+
+Time Slots:
+ID  Start       End
+1   08:00:00    09:00:00
+2   09:00:00    10:00:00
+3   11:00:00    12:00:00
+
+Campaign Booking Costs:
+Time Slot ID    Booking Sheet ID    Cost
+1               1                   200
+
