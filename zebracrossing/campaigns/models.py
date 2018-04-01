@@ -18,11 +18,11 @@ class BookingSheet(models.Model):
         ('LR', 'Live Read'),
         ('COMP', 'Competition')
     )
-    material = models.FileField()
     ad_type = models.CharField('type', max_length=100, choices=AD_TYPES)
     start_date = models.DateField('start date')
     end_date = models.DateField('end date')
     campaign = models.ForeignKey('Campaign', on_delete=models.CASCADE)
+    material = models.FileField(upload_to='bookings/')
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude=exclude)

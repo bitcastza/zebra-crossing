@@ -1,6 +1,8 @@
 from datetime import date
+import mimetypes
 
 from django.shortcuts import get_object_or_404, render, redirect
+from django.http import HttpResponse
 
 from .models import BookingSheet, Campaign
 from .forms import BookingSheetForm
@@ -58,3 +60,10 @@ def add_booking(request, campaign_id):
             'campaign': campaign,
         }
         return render(request, 'campaigns/addbooking.html', context)
+
+def show_booking(request, booking_id):
+    booking = get_object_or_404(BookingSheet, pk=booking_id)
+    mimetype = mimetypes.guess_type(booking.material.url)[1]
+    response = HttpResponse(booking.material, content_type=mimetype)
+    response['Content-Disposition'] = 'attachment; filename="' + booking.material.name + '"\''
+    return response

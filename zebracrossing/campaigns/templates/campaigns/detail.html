@@ -10,7 +10,7 @@ Ad Agency: {{ campaign.ad_agency }}<br>
 {% if booking_sheets %}
   <ul>
     {% for sheet in booking_sheets %}
-    <li>{{ sheet.start_date }} - {{ sheet.end_date }} ({{ sheet.get_ad_type_display }})</li>
+    <li><a href="{% url 'campaigns:show_booking' sheet.id %}">{{ sheet.start_date }} - {{ sheet.end_date }} ({{ sheet.get_ad_type_display }})</a></li>
     {% endfor %}
   </ul>
 {% endif %}
