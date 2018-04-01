@@ -1,8 +1,9 @@
 from datetime import date
 
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 
 from .models import BookingSheet, Campaign
+from .forms import BookingSheetForm
 
 def index(request):
     campaigns = Campaign.objects.all()
@@ -33,3 +34,27 @@ def detail(request, campaign_id):
         'booking_sheets': booking_sheets,
     }
     return render(request, 'campaigns/detail.html', context)
+
+def add_booking(request, campaign_id):
+    if request.method == "POST":
+        campaign = Campaign.objects.get(id=campaign_id)
+        booking = BookingSheet(campaign=campaign)
+        form = BookingSheetForm(request.POST, request.FILES, instance=booking)
+        if form.is_valid():
+            booking = form.save()
+            return redirect('campaigns:detail', campaign_id=campaign_id)
+        else:
+            context = {
+                'form': form,
+                'campaign': campaign,
+            }
+            return render(request, 'campaigns/addbooking.html', context)
+
+    else:
+        campaign = get_object_or_404(Campaign, pk=campaign_id)
+        form = BookingSheetForm()
+        context = {
+            'form': form,
+            'campaign': campaign,
+        }
+        return render(request, 'campaigns/addbooking.html', context)

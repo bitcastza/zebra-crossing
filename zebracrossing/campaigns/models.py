@@ -1,13 +1,8 @@
 from datetime import date
 
+from django.core.exceptions import ValidationError
 from django.db import models
-
-AD_TYPES = (
-    ('SM', 'Social Media'),
-    ('REC', 'Recorded'),
-    ('LR', 'Live Read'),
-    ('COMP', 'Competition')
-)
+from django.utils.translation import gettext_lazy as _
 
 class TimeSlot(models.Model):
     start_time = models.TimeField('start time')
@@ -17,18 +12,33 @@ class TimeSlot(models.Model):
         return self.start_time.strftime("%H:%M") + " - " + self.end_time.strftime("%H:%M")
 
 class BookingSheet(models.Model):
+    AD_TYPES = (
+        ('SM', 'Social Media'),
+        ('REC', 'Recorded'),
+        ('LR', 'Live Read'),
+        ('COMP', 'Competition')
+    )
     material = models.FileField()
     ad_type = models.CharField('type', max_length=100, choices=AD_TYPES)
     start_date = models.DateField('start date')
     end_date = models.DateField('end date')
     campaign = models.ForeignKey('Campaign', on_delete=models.CASCADE)
 
+    def clean_fields(self, exclude=None):
+        super().clean_fields(exclude=exclude)
+        if self.start_date > self.end_date:
+            if exclude and 'start_date' in exclude:
+                raise ValidationError(_("Start date is after end date"))
+            else:
+                raise ValidationError({'start_date': _("Start date is after end date")})
+        if self.campaign is None:
+            raise ValidationError(_("Campaign not specified"))
+
     def __str__(self):
         return self.campaign.get_client() + " (" + \
                 self.campaign.get_ad_agency() + "): " + \
                 self.start_date.strftime("%Y/%m/%d") + " - " + \
                 self.end_date.strftime("%Y/%m/%d") + " (" + self.ad_type + ")"
-
 
 class Campaign(models.Model):
     client = models.CharField(max_length=200)

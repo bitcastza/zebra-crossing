@@ -2,9 +2,31 @@
 {% if active_campaigns %}
   <ul>
 {% for campaign in active_campaigns %}
-  <li><a href="/campaigns/{{ campaign.id }}/">{{ campaign }}</a></li>
+  <li><a href="{% url 'campaigns:detail' campaign.id %}">{{ campaign }}</a></li>
 {% endfor %}
   </ul>
 {% else %}
   <p>No campaigns are currently active</p>
+{% endif %}
+
+<h1>Upcoming Campaigns</h1>
+{% if upcoming_campaigns %}
+  <ul>
+{% for campaign in upcoming_campaigns %}
+  <li><a href="{% url 'campaigns:detail' campaign.id %}">{{ campaign }}</a></li>
+{% endfor %}
+  </ul>
+{% else %}
+  <p>No campaigns are currently coming up</p>
+{% endif %}
+
+<h1>Past Campaigns</h1>
+{% if past_campaigns %}
+  <ul>
+{% for campaign in past_campaigns %}
+  <li><a href="{% url 'campaigns:detail' campaign.id %}">{{ campaign }}</a></li>
+{% endfor %}
+  </ul>
+{% else %}
+  <p>There are no past campaigns</p>
 {% endif %}
