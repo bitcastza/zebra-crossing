@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 import mimetypes
 
 from django.shortcuts import get_object_or_404, render, redirect
@@ -14,12 +14,13 @@ def index(request):
     past_campaigns = []
     for campaign in campaigns:
         start_date = campaign.get_start_date()
+        end_date = campaign.get_end_date()
         if campaign.is_active():
             active_campaigns.append(campaign)
-        elif start_date != None and start_date - date.today() < 7:
-            upcoming_campaigns.append(campaign)
-        elif start_date != None:
+        elif end_date != None and end_date < date.today():
             past_campaigns.append(campaign)
+        elif start_date != None and start_date - date.today() < timedelta(weeks=1):
+            upcoming_campaigns.append(campaign)
 
     context = {
         'active_campaigns': active_campaigns,
