@@ -3,9 +3,16 @@ import mimetypes
 
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
+from django.views import generic
 
 from .models import BookingSheet, Campaign
 from .forms import BookingSheetForm
+
+class CampaignView(generic.DetailView):
+    model = Campaign
+
+class BookingView(generic.DetailView):
+    model = BookingSheet
 
 def index(request):
     campaigns = Campaign.objects.all()
@@ -29,15 +36,6 @@ def index(request):
     }
     return render(request, 'campaigns/index.html', context)
 
-def detail(request, campaign_id):
-    campaign = get_object_or_404(Campaign, pk=campaign_id)
-    booking_sheets = BookingSheet.objects.filter(campaign=campaign_id)
-    context = {
-        'campaign': campaign,
-        'booking_sheets': booking_sheets,
-    }
-    return render(request, 'campaigns/detail.html', context)
-
 def add_booking(request, campaign_id):
     if request.method == "POST":
         campaign = Campaign.objects.get(id=campaign_id)
@@ -51,7 +49,7 @@ def add_booking(request, campaign_id):
                 'form': form,
                 'campaign': campaign,
             }
-            return render(request, 'campaigns/addbooking.html', context)
+            return render(request, 'campaigns/add_booking.html', context)
 
     else:
         campaign = get_object_or_404(Campaign, pk=campaign_id)
@@ -60,9 +58,9 @@ def add_booking(request, campaign_id):
             'form': form,
             'campaign': campaign,
         }
-        return render(request, 'campaigns/addbooking.html', context)
+        return render(request, 'campaigns/add_booking.html', context)
 
-def show_booking(request, booking_id):
+def show_booking_sheet(request, booking_id):
     booking = get_object_or_404(BookingSheet, pk=booking_id)
     mimetype = mimetypes.guess_type(booking.material.url)[1]
     response = HttpResponse(booking.material, content_type=mimetype)

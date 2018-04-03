@@ -8,10 +8,10 @@ Cost: R{{ campaign.get_cost }}<br>
 <h2>Booking Sheets</h2>
 <a href="{% url 'campaigns:add_booking' campaign.id %}">Add booking sheet</a>
 
-{% if booking_sheets %}
+{% if campaign.get_booking_sheets %}
   <ul>
-    {% for sheet in booking_sheets %}
-    <li><a href="{% url 'campaigns:show_booking' sheet.id %}">{{ sheet.start_date }} - {{ sheet.end_date }} ({{ sheet.get_ad_type_display }})</a></li>
+    {% for sheet in campaign.get_booking_sheets %}
+    <li><a href="{% url 'campaigns:show_booking_sheet' sheet.id %}">{{ sheet.start_date }} - {{ sheet.end_date }} ({{ sheet.get_ad_type_display }})</a></li>
     {% endfor %}
   </ul>
 {% endif %}

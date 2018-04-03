@@ -82,6 +82,9 @@ class Campaign(models.Model):
                 cost += slot.cost
         return cost
 
+    def get_booking_sheets(self):
+        return BookingSheet.objects.filter(campaign=self.id)
+
     def is_active(self):
         today = date.today()
         start_date = self.get_start_date()
