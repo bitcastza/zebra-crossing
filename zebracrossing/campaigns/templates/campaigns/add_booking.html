@@ -25,11 +25,6 @@
 {% block extra_foot %}
 <script src="{% static 'vendor/moment/min/moment.min.js' %}"></script>
 <script src="{% static 'vendor/bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js' %}"></script>
-<script type="text/javascript">
-  $(function () {
-      $('.date-input').datetimepicker({
-          format:'YYYY-MM-DD'
-      });
-  });
+<script src="{% static 'js/use_datetimepicker.js' %}"></script>
 </script>
 {% endblock %}
