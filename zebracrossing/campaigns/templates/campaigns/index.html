@@ -2,36 +2,41 @@
 {% block content %}
 <h1>Campaigns</h1>
 
-<h2>Active Campaigns</h2>
-{% if active_campaigns %}
-  <ul class="list-group">
-{% for campaign in active_campaigns %}
-  <li class="list-group-item"><a href="{% url 'campaigns:detail' campaign.id %}">{{ campaign }}</a></li>
-{% endfor %}
-  </ul>
-{% else %}
-  <p>No campaigns are currently active</p>
-{% endif %}
-
-<h2>Upcoming Campaigns</h2>
-{% if upcoming_campaigns %}
-  <ul class="list-group">
-{% for campaign in upcoming_campaigns %}
-  <li class="list-group-item"><a href="{% url 'campaigns:detail' campaign.id %}">{{ campaign }}</a></li>
-{% endfor %}
-  </ul>
-{% else %}
-  <p>No campaigns are currently coming up</p>
-{% endif %}
-
-<h2>Past Campaigns</h2>
-{% if past_campaigns %}
-  <ul class="list-group">
-{% for campaign in past_campaigns %}
-  <li class="list-group-item"><a href="{% url 'campaigns:detail' campaign.id %}">{{ campaign }}</a></li>
-{% endfor %}
-  </ul>
-{% else %}
-  <p>There are no past campaigns</p>
-{% endif %}
+<div id="campaigns" class="row">
+  <div class="col-lg-4">
+    <h2>Active Campaigns</h2>
+    {% if active_campaigns %}
+      <ul class="list-group">
+    {% for campaign in active_campaigns %}
+      <li class="list-group-item"><a href="{% url 'campaigns:detail' campaign.id %}">{{ campaign }}</a></li>
+    {% endfor %}
+      </ul>
+    {% else %}
+      <p>No campaigns are currently active</p>
+    {% endif %}
+  </div>
+  <div class="col-lg-4">
+    <h2>Upcoming Campaigns</h2>
+    {% if upcoming_campaigns %}
+      <ul class="list-group">
+    {% for campaign in upcoming_campaigns %}
+      <li class="list-group-item"><a href="{% url 'campaigns:detail' campaign.id %}">{{ campaign }}</a></li>
+    {% endfor %}
+      </ul>
+    {% else %}
+      <p>No campaigns are currently coming up</p>
+    {% endif %}
+  </div>
+  <div class="col-lg-4">
+    <h2>Past Campaigns</h2>
+    {% if past_campaigns %}
+      <ul class="list-group">
+    {% for campaign in past_campaigns %}
+      <li class="list-group-item"><a href="{% url 'campaigns:detail' campaign.id %}">{{ campaign }}</a></li>
+    {% endfor %}
+      </ul>
+    {% else %}
+      <p>There are no past campaigns</p>
+    {% endif %}
+  </div>
 {% endblock %}
