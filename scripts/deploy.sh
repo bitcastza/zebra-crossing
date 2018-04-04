@@ -1,19 +1,16 @@
 #!/bin/bash
 set -e
 
-echo $ANSIBLE_VAULT_PASSWORD > ~/ansible_vault_password.txt
-mkdir ~/.ssh/
-chmod 700 ~/.ssh
-echo $SSH_KEY > ~/.ssh/id_rsa
+which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
+eval $(ssh-agent -s)
+echo "$SSH_KEY" | tr -d '\r' | ssh-add - > /dev/null
+mkdir ~/.ssh && chmod 700 ~/.ssh
 
 git clone https://gitlab.com/paddatrapper/dotfiles ~/dotfiles
 cd ~/dotfiles
 stow ansible
 
-cd ~/
-git clone https://gitlab.com/paddatrapper/ansible
+git clone https://gitlab.com/zebra-crossing/ansible ~/ansible
 cd ~/ansible
 
-ansible-playbook --vault-password-file=~/ansible_vault_password.txt
-
-rm ~/ansible_vault_password.txt
+ansible-playbook site.yml
