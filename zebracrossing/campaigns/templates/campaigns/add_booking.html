@@ -1,11 +1,35 @@
+{% extends 'zebracrossing/base.html' %}
+{% load static %}
+{% block content %}
 <h1>Upload Booking Sheet</h1>
-<form enctype="multipart/form-data" action="{% url 'campaigns:add_booking' campaign.id %}" method="post">
-  {% csrf_token %}
-  {% for field in form %}
-    <div class="fieldWrapper">
-      {{ field.errors }}
-      {{ field.label_tag }} {{ field }}
-    </div>
-  {% endfor %}
-  <input type="submit" value="Add" />
-</form>
+<div class="col-sm-6">
+  <div class="form-group">
+    <form enctype="multipart/form-data" action="{% url 'campaigns:add_booking' campaign.id %}" method="post">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="form-item">
+        {{ field.errors }}
+        {{ field.label_tag }} {{ field }}
+      </div>
+      {% endfor %}
+      <input type="submit" value="Next" />
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<link href="{% static 'vendor/bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet" media="screen">
+{% endblock %}
+
+{% block extra_foot %}
+<script src="{% static 'vendor/moment/min/moment.min.js' %}"></script>
+<script src="{% static 'vendor/bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js' %}"></script>
+<script type="text/javascript">
+  $(function () {
+      $('.date-input').datetimepicker({
+          format:'YYYY-MM-DD'
+      });
+  });
+</script>
+{% endblock %}

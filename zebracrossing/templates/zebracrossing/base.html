@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{% block title %}Zebra Crossing{% endblock %}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'vendor/bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet" media="screen">
+    <link href="{% static 'css/zebracrossing.css' %}" rel="stylesheet" media="screen">
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body>
+    <div id="main" class="container {% block container_class %}{% endblock %}">
+      {% block content %}
+      <h1>Zebra Crossing</h1>
+      {% endblock %}
+    </div>
+    <script src="{% static 'vendor/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+    {% block extra_foot %}{% endblock %}
+  </body>
+</html>

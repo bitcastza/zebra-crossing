@@ -1,32 +1,37 @@
-<h1>Active Campaigns</h1>
+{% extends 'zebracrossing/base.html' %}
+{% block content %}
+<h1>Campaigns</h1>
+
+<h2>Active Campaigns</h2>
 {% if active_campaigns %}
-  <ul>
+  <ul class="list-group">
 {% for campaign in active_campaigns %}
-  <li><a href="{% url 'campaigns:detail' campaign.id %}">{{ campaign }}</a></li>
+  <li class="list-group-item"><a href="{% url 'campaigns:detail' campaign.id %}">{{ campaign }}</a></li>
 {% endfor %}
   </ul>
 {% else %}
   <p>No campaigns are currently active</p>
 {% endif %}
 
-<h1>Upcoming Campaigns</h1>
+<h2>Upcoming Campaigns</h2>
 {% if upcoming_campaigns %}
-  <ul>
+  <ul class="list-group">
 {% for campaign in upcoming_campaigns %}
-  <li><a href="{% url 'campaigns:detail' campaign.id %}">{{ campaign }}</a></li>
+  <li class="list-group-item"><a href="{% url 'campaigns:detail' campaign.id %}">{{ campaign }}</a></li>
 {% endfor %}
   </ul>
 {% else %}
   <p>No campaigns are currently coming up</p>
 {% endif %}
 
-<h1>Past Campaigns</h1>
+<h2>Past Campaigns</h2>
 {% if past_campaigns %}
-  <ul>
+  <ul class="list-group">
 {% for campaign in past_campaigns %}
-  <li><a href="{% url 'campaigns:detail' campaign.id %}">{{ campaign }}</a></li>
+  <li class="list-group-item"><a href="{% url 'campaigns:detail' campaign.id %}">{{ campaign }}</a></li>
 {% endfor %}
   </ul>
 {% else %}
   <p>There are no past campaigns</p>
 {% endif %}
+{% endblock %}

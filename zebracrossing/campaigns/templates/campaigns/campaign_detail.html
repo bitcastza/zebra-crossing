@@ -1,17 +1,26 @@
+{% extends 'zebracrossing/base.html' %}
+{% block content %}
 <h1>{{ campaign }}</h1>
 <p>
 Client: {{ campaign.client }}<br>
 Ad Agency: {{ campaign.ad_agency }}<br>
-Cost: R{{ campaign.get_cost }}<br>
+Cost: R {{ campaign.get_cost }}<br>
 </p>
 
-<h2>Booking Sheets</h2>
-<a href="{% url 'campaigns:add_booking' campaign.id %}">Add booking sheet</a>
+<div id="booking_sheets" class="row">
+  <div class="col-sm-8">
+    <h2>Booking Sheets</h2>
+  </div>
+  <div class="col-sm-4">
+    <a href="{% url 'campaigns:add_booking' campaign.id %}">Add booking</a>
+  </div>
+</div>
 
 {% if campaign.get_booking_sheets %}
-  <ul>
+  <ul class="list-group">
     {% for sheet in campaign.get_booking_sheets %}
-    <li><a href="{% url 'campaigns:show_booking_sheet' sheet.id %}">{{ sheet.start_date }} - {{ sheet.end_date }} ({{ sheet.get_ad_type_display }})</a></li>
+    <li class="list-group-item"><a href="{% url 'campaigns:show_booking_sheet' sheet.id %}">{{ sheet.start_date }} - {{ sheet.end_date }} ({{ sheet.get_ad_type_display }})</a></li>
     {% endfor %}
   </ul>
 {% endif %}
+{% endblock %}
