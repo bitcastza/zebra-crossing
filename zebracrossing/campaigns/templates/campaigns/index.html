@@ -1,7 +1,13 @@
 {% extends 'zebracrossing/base.html' %}
 {% block content %}
-<h1>Campaigns</h1>
-
+<div id=campaign-heading" class="row">
+  <div class="col-sm-8">
+    <h1>Campaigns</h1>
+  </div>
+  <div class="col-sm-4">
+    <a href="{% url 'campaigns:add_campaign' %}">Add campaign</a>
+  </div>
+</div>
 <div id="campaigns" class="row">
   <div class="col-lg-4">
     <h2>Active Campaigns</h2>

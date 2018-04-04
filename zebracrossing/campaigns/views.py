@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.views import generic
 
 from .models import BookingSheet, Campaign
-from .forms import BookingSheetForm
+from .forms import BookingSheetForm, CampaignForm
 
 class CampaignView(generic.DetailView):
     model = Campaign
@@ -43,7 +43,7 @@ def add_booking(request, campaign_id):
         form = BookingSheetForm(request.POST, request.FILES, instance=booking)
         if form.is_valid():
             booking = form.save()
-            return redirect('campaigns:detail', campaign_id=campaign_id)
+            return redirect('campaigns:detail', pk=campaign_id)
         else:
             context = {
                 'form': form,
@@ -59,6 +59,26 @@ def add_booking(request, campaign_id):
             'campaign': campaign,
         }
         return render(request, 'campaigns/add_booking.html', context)
+
+def add_campaign(request):
+    if request.method == "POST":
+        form = CampaignForm(request.POST, request.FILES)
+        if form.is_valid():
+            campaign = form.save()
+            return redirect("campaigns:add_booking", campaign_id=campaign.id)
+        else:
+            context = {
+                'form': form,
+                'campaign': campaign,
+            }
+            return render(request, 'campaigns/add_campaign.html', context)
+
+    else:
+        form = CampaignForm()
+        context = {
+            'form': form,
+        }
+        return render(request, 'campaigns/add_campaign.html', context)
 
 def show_booking_sheet(request, booking_id):
     booking = get_object_or_404(BookingSheet, pk=booking_id)

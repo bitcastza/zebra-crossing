@@ -5,8 +5,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 class TimeSlot(models.Model):
-    start_time = models.TimeField('start time')
-    end_time = models.TimeField('end time')
+    start_time = models.TimeField(_('start time'))
+    end_time = models.TimeField(_('end time'))
 
     def __str__(self):
         return self.start_time.strftime("%H:%M") + " - " + self.end_time.strftime("%H:%M")
@@ -18,9 +18,9 @@ class BookingSheet(models.Model):
         ('LR', 'Live Read'),
         ('COMP', 'Competition')
     )
-    ad_type = models.CharField('type', max_length=100, choices=AD_TYPES)
-    start_date = models.DateField('start date')
-    end_date = models.DateField('end date')
+    ad_type = models.CharField(_('type'), max_length=100, choices=AD_TYPES)
+    start_date = models.DateField(_('start date'))
+    end_date = models.DateField(_('end date'))
     campaign = models.ForeignKey('Campaign', on_delete=models.CASCADE)
     material = models.FileField(upload_to='bookings/')
 
@@ -42,7 +42,7 @@ class BookingSheet(models.Model):
 
 class Campaign(models.Model):
     client = models.CharField(max_length=200)
-    ad_agency = models.CharField('advertising agency', max_length=200)
+    ad_agency = models.CharField(_('advertising agency'), max_length=200)
 
     def __str__(self):
         return self.client + " from " + self.ad_agency
