@@ -19,7 +19,7 @@ Cost: R {{ campaign.get_cost }}<br>
 {% if campaign.get_booking_sheets %}
   <ul class="list-group">
     {% for sheet in campaign.get_booking_sheets %}
-    <li class="list-group-item"><a href="{% url 'campaigns:show_booking_sheet' sheet.id %}">{{ sheet.start_date }} - {{ sheet.end_date }} ({{ sheet.get_ad_type_display }})</a></li>
+    <li class="list-group-item"><a href="{% url 'campaigns:show_booking_sheet' sheet.id %}">{{ sheet.get_ad_type_display }}: {{ sheet.start_date }} - {{ sheet.end_date }}</a></li>
     {% endfor %}
   </ul>
 {% endif %}
