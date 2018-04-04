@@ -15,13 +15,25 @@ class TimeSlotTests(TestCase):
         self.assertEqual(time_slot.__str__(), expected)
 
 class BookingSheetTests(TestCase):
-    def test_clean_fields_start_after_end_exclude(self):
-        campaign = Campaign(client='test client', ad_agency='test agency')
-        booking_sheet = BookingSheet(ad_type='REC',
+    @classmethod
+    def setUpTestData(cls):
+        campaign = Campaign.objects.create(client='test client', ad_agency='test agency')
+        cls.fp = open('README.md','r')
+        cls.booking_sheet = BookingSheet(ad_type='REC',
                                      start_date=datetime.date(year=2018, month=4, day=2),
                                      end_date=datetime.date(year=2018, month=2, day=2),
-                                     # TODO: Fix this...
                                      campaign=campaign,
-                                     material=File("test file"))
-        with self.assertRaisesMessage(ValidationError, _("Start date is after end date")):
-            booking_sheet.clean_fields()
+                                     material=File(cls.fp))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.fp.close()
+        super().tearDownClass()
+
+    def test_clean_fields_start_after_end_exclude(self):
+        with self.assertRaisesMessage(ValidationError, "Start date is after end date"):
+            self.booking_sheet.clean_fields(exclude=['start_date'])
+
+    def test_clean_fields_start_after_end(self):
+        with self.assertRaisesMessage(ValidationError, "Start date is after end date"):
+            self.booking_sheet.clean_fields()
