@@ -2,4 +2,4 @@ pyenv/
 __pycache__/
 *.pyc
 *.sqlite3
-bookings/
+/campaigns/

@@ -12,6 +12,9 @@ class TimeSlot(models.Model):
         return self.start_time.strftime("%H:%M") + " - " + self.end_time.strftime("%H:%M")
 
 class BookingSheet(models.Model):
+    def upload_to_campaign(instance, filename):
+        return "campaigns/{0}/bookings/{1}".format(instance.campaign.id, filename)
+
     AD_TYPES = (
         ('SM', 'Social Media'),
         ('REC', 'Recorded'),
@@ -22,7 +25,7 @@ class BookingSheet(models.Model):
     start_date = models.DateField(_('start date'))
     end_date = models.DateField(_('end date'))
     campaign = models.ForeignKey('Campaign', on_delete=models.CASCADE)
-    material = models.FileField(upload_to='bookings/')
+    material = models.FileField(upload_to=upload_to_campaign)
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude=exclude)
