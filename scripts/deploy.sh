@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 echo $ANSIBLE_VAULT_PASSWORD > ~/ansible_vault_password.txt
 mkdir ~/.ssh/
