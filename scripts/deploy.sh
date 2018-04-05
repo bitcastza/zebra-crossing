@@ -13,4 +13,4 @@ stow ansible
 git clone https://gitlab.com/zebra-crossing/ansible ~/ansible
 cd ~/ansible
 
-ansible-playbook site.yml
+ansible-playbook site.yml --extra-vars "zebra_crossing_key=$ZEBRA_CROSSING_KEY"
