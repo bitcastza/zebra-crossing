@@ -6,11 +6,7 @@ eval $(ssh-agent -s)
 echo "$SSH_KEY" | tr -d '\r' | ssh-add - > /dev/null
 mkdir ~/.ssh && chmod 700 ~/.ssh
 
-git clone https://gitlab.com/paddatrapper/dotfiles ~/dotfiles
-cd ~/dotfiles
-stow ansible
-
 git clone https://gitlab.com/zebra-crossing/ansible ~/ansible
 cd ~/ansible
 
-ansible-playbook site.yml --extra-vars "zebra_crossing_key=$ZEBRA_CROSSING_KEY"
+ansible-playbook site.yml --inventory=./hosts --extra-vars="zebra_crossing_key=$ZEBRA_CROSSING_KEY"
