@@ -3,5 +3,4 @@ __pycache__/
 *.pyc
 *.sqlite3
 /campaigns/
-local_settings.py
-zebracrossing.sock
+zebracrossing/local_settings.py
