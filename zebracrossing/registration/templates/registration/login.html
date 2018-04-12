@@ -1,0 +1,41 @@
+{% extends 'zebracrossing/base.html' %}
+
+{% block content %}
+{% if form.errors %}
+<div class="alert alert-danger">
+  <p>Your username and password didn't match. Please try again.</p>
+</div>
+{% endif %}
+
+{% if next %}
+  {% if user.is_authenticated %}
+  <div class="alert alert-warning">
+  <p>Your account doesn't have access to this page. To proceed,
+  please login with an account that has access.</p>
+</div>
+  {% endif %}
+{% endif %}
+
+<div class="col-sm-6">
+  <div class="form-group">
+    <form method="post" action="{% url 'registration:login' %}">
+      {% csrf_token %}
+      <div class="form-item">
+        <td>{{ form.username.label_tag }}</td>
+        <td>{{ form.username }}</td>
+      </div>
+      <div class="form-item">
+        <td>{{ form.password.label_tag }}</td>
+        <td>{{ form.password }}</td>
+      </div>
+
+      <div>
+        <input type="submit" value="Login" />
+        <input type="hidden" name="next" value="{{ next }}" />
+      </div>
+    </form>
+  </div>
+  <p><a href="{% url 'registration:password_reset' %}">Forgotten password?</a></p>
+</div>
+
+{% endblock %}

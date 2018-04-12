@@ -1,6 +1,8 @@
 from datetime import date, timedelta
 import mimetypes
 
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import mixins
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
 from django.views import generic
@@ -8,12 +10,13 @@ from django.views import generic
 from .models import BookingSheet, Campaign
 from .forms import BookingSheetForm, CampaignForm
 
-class CampaignView(generic.DetailView):
+class CampaignView(mixins.LoginRequiredMixin, generic.DetailView):
     model = Campaign
 
-class BookingView(generic.DetailView):
+class BookingView(mixins.LoginRequiredMixin, generic.DetailView):
     model = BookingSheet
 
+@login_required
 def index(request):
     campaigns = Campaign.objects.all()
     active_campaigns = []
@@ -36,6 +39,7 @@ def index(request):
     }
     return render(request, 'campaigns/index.html', context)
 
+@login_required
 def add_booking(request, campaign_id):
     if request.method == "POST":
         campaign = Campaign.objects.get(id=campaign_id)
@@ -60,6 +64,7 @@ def add_booking(request, campaign_id):
         }
         return render(request, 'campaigns/add_booking.html', context)
 
+@login_required
 def add_campaign(request):
     if request.method == "POST":
         form = CampaignForm(request.POST, request.FILES)
@@ -80,6 +85,7 @@ def add_campaign(request):
         }
         return render(request, 'campaigns/add_campaign.html', context)
 
+@login_required
 def show_booking_sheet(request, booking_id):
     booking = get_object_or_404(BookingSheet, pk=booking_id)
     mimetype = mimetypes.guess_type(booking.material.url)[1]
