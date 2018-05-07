@@ -1,0 +1,30 @@
+<nav class="navbar navbar-default">
+  <div class="container">
+    {% block navtitle %}
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/">Zebra Crossing</a>
+    </div>
+    {% endblock %}
+    {% block navuser %}
+    <ul class="nav navbar-nav navbar-right">
+      {% if user.is_staff %}
+      <li>
+        <a href="{% url 'admin:index' %}">
+          <span class="glyphicon glyphicon-cog"></span> Site Admin</a>
+      </li>
+      {% endif %}
+      {% if user.is_authenticated %}
+      <li>
+        <a href="{% url 'registration:logout' %}">
+          <span class="glyphicon glyphicon-log-out"></span> Log Out</a>
+      </li>
+      {% else %}
+      <li>
+        <a href=" {% url 'registration:login' %}">
+          <span class="glyphicon glyphicon-log-in"></span> Login</a>
+      </li>
+      {% endif %}
+    </ul>
+    {% endblock %}
+  </div>
+</nav>

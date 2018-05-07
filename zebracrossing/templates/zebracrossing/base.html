@@ -10,6 +10,7 @@
     {% block extra_head %}{% endblock %}
   </head>
   <body>
+    {% include "zebracrossing/nav.html" %}
     <div id="main" class="container {% block container_class %}{% endblock %}">
       {% block content %}
       <h1>Zebra Crossing</h1>
