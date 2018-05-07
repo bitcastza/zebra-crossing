@@ -5,7 +5,7 @@ from .models import BookingSheet, Campaign
 class BookingSheetForm(forms.ModelForm):
     class Meta:
         model = BookingSheet
-        fields = ['material', 'ad_type', 'start_date', 'end_date', 'time_slots']
+        fields = ['material', 'ad_type', 'start_date', 'end_date', 'cost', 'time_slots']
         widgets = {
             'start_date': forms.DateInput(attrs={'class': 'date-input'}),
             'end_date': forms.DateInput(attrs={'class': 'date-input'}),
