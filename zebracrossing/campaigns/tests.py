@@ -8,22 +8,24 @@ from .models import BookingSheet, Campaign, TimeSlot
 
 class TimeSlotTests(TestCase):
     def test_to_string(self):
-        time_slot = TimeSlot(start_time=datetime.time(hour=8),
-                             end_time=datetime.time(hour=9))
-        expected = datetime.time(hour=8).strftime("%H:%M") + " - " + \
-                datetime.time(hour=9).strftime("%H:%M")
+        time_slot = TimeSlot(time=datetime.time(hour=8))
+        expected = datetime.time(hour=8).strftime("%H:%M")
         self.assertEqual(time_slot.__str__(), expected)
 
 class BookingSheetTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         campaign = Campaign.objects.create(client='test client', ad_agency='test agency')
+        time_slot = TimeSlot.objects.create(time=datetime.time(hour=8))
         cls.fp = open('README.md','r')
         cls.booking_sheet = BookingSheet(ad_type='REC',
                                      start_date=datetime.date(year=2018, month=4, day=2),
                                      end_date=datetime.date(year=2018, month=2, day=2),
                                      campaign=campaign,
-                                     material=File(cls.fp))
+                                     material=File(cls.fp),
+                                     cost=220)
+        cls.booking_sheet.save()
+        cls.booking_sheet.time_slots.add(time_slot)
 
     @classmethod
     def tearDownClass(cls):
