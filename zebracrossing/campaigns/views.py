@@ -57,7 +57,7 @@ def add_booking(request, campaign_id):
 
     else:
         campaign = get_object_or_404(Campaign, pk=campaign_id)
-        form = BookingSheetForm(initial={'cost': 0})
+        form = BookingSheetForm(initial={'cost': 0, 'time_slot_flexiblility': 0})
         context = {
             'form': form,
             'campaign': campaign,

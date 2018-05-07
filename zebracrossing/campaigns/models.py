@@ -10,6 +10,11 @@ class TimeSlot(models.Model):
     def __str__(self):
         return self.time.strftime("%H:%M")
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.time == other.time
+        return False
+
 class BookingSheet(models.Model):
     def upload_to_campaign(instance, filename):
         return "campaigns/{0}/bookings/{1}".format(instance.campaign.id, filename)
@@ -44,12 +49,33 @@ class BookingSheet(models.Model):
                 self.start_date.strftime("%Y/%m/%d") + " - " + \
                 self.end_date.strftime("%Y/%m/%d") + " (" + self.ad_type + ")"
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            result = self.ad_type == other.ad_type and \
+                    self.start_date == other.start_date and \
+                    self.end_date == other.end_date and \
+                    self.campaign == other.campaign and \
+                    self.cost == other.cost
+            if not result:
+                return False
+            for slot in self.time_slots.all():
+                for other_slot in other.time_slots.all():
+                    if slot != other_slot:
+                        return False
+            return result
+        return False
+
 class Campaign(models.Model):
     client = models.CharField(max_length=200)
     ad_agency = models.CharField(_('advertising agency'), max_length=200)
 
     def __str__(self):
         return self.client + " from " + self.ad_agency
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.client == other.client and self.ad_agency == other.ad_agency
+        return False;
 
     def get_client(self):
         return self.client
