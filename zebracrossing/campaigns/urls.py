@@ -9,5 +9,5 @@ urlpatterns = [
     path('<int:pk>/', views.CampaignView.as_view(), name='detail'),
     path('<int:campaign_id>/add_booking/', views.add_booking, name='add_booking'),
     path('booking/<int:pk>/', views.BookingView.as_view(), name='show_booking'),
-    path('booking/<int:booking_id>/sheet/', views.show_booking_sheet, name='show_booking_sheet'),
+    path('booking/<int:booking_id>/sheet/', views.download_booking_sheet, name='download_booking_sheet'),
 ]

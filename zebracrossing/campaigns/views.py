@@ -47,7 +47,7 @@ def add_booking(request, campaign_id):
         form = BookingSheetForm(request.POST, request.FILES, instance=booking)
         if form.is_valid():
             booking = form.save()
-            return redirect('campaigns:detail', pk=campaign_id)
+            return redirect('campaigns:detail', campaign_id)
         else:
             context = {
                 'form': form,
@@ -86,9 +86,9 @@ def add_campaign(request):
         return render(request, 'campaigns/add_campaign.html', context)
 
 @login_required
-def show_booking_sheet(request, booking_id):
+def download_booking_sheet(request, booking_id):
     booking = get_object_or_404(BookingSheet, pk=booking_id)
-    mimetype = mimetypes.guess_type(booking.material.url)[1]
+    mimetype = mimetypes.guess_type(booking.material.url)[0]
     response = HttpResponse(booking.material, content_type=mimetype)
-    response['Content-Disposition'] = 'attachment; filename="' + booking.material.name + '"\''
+    response['Content-Disposition'] = 'filename="' + booking.material.name + '"\''
     return response

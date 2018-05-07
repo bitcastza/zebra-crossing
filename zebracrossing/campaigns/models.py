@@ -5,11 +5,10 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 class TimeSlot(models.Model):
-    start_time = models.TimeField(_('start time'))
-    end_time = models.TimeField(_('end time'))
+    time = models.TimeField(_('Time'))
 
     def __str__(self):
-        return self.start_time.strftime("%H:%M") + " - " + self.end_time.strftime("%H:%M")
+        return self.time.strftime("%H:%M")
 
 class BookingSheet(models.Model):
     def upload_to_campaign(instance, filename):
@@ -26,6 +25,8 @@ class BookingSheet(models.Model):
     end_date = models.DateField(_('end date'))
     campaign = models.ForeignKey('Campaign', on_delete=models.CASCADE)
     material = models.FileField(upload_to=upload_to_campaign)
+    time_slots = models.ManyToManyField(TimeSlot)
+    cost = models.IntegerField()
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude=exclude)
@@ -80,9 +81,7 @@ class Campaign(models.Model):
         cost = 0
         booking_sheets = BookingSheet.objects.filter(campaign=self.id)
         for booking in booking_sheets:
-            time_slots = CampaignBookingCost.objects.filter(booking_sheet=booking.id)
-            for slot in time_slots:
-                cost += slot.cost
+            cost += booking.cost
         return cost
 
     def get_booking_sheets(self):
@@ -95,16 +94,3 @@ class Campaign(models.Model):
         if start_date == None or end_date == None:
             return False
         return start_date <= today and end_date >= today
-
-class CampaignBookingCost(models.Model):
-    class Meta:
-        unique_together = (('time_slot', 'booking_sheet'),)
-
-    time_slot = models.ForeignKey(TimeSlot, on_delete=models.CASCADE)
-    booking_sheet = models.ForeignKey(BookingSheet, on_delete=models.CASCADE)
-    cost = models.IntegerField()
-
-    def __str__(self):
-        time_slot = TimeSlot.objects.get(id=self.time_slot)
-        booking_sheet = BookingSheet.objects.get(id=self.booking_sheet)
-        return booking_sheet + ": " + booking_sheet + " (R" + self.cost + ")"

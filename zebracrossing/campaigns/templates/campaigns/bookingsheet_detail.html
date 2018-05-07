@@ -1,0 +1,21 @@
+{% extends 'zebracrossing/base.html' %}
+{% block content %}
+
+<div id="time_slots" class="row">
+  <div class="col-sm-8">
+    <h2>Time Slots</h2>
+  </div>
+  <div class="col-sm-4">
+    <a href="{% url 'campaigns:download_booking_sheet' bookingsheet.id %}"
+      class="btn btn-primary heading-btn" role="buttom">Download Booking Sheet</a>
+  </div>
+</div>
+{% if bookingsheet.time_slots %}
+  <ul class="list-group">
+    {% for time_slot in bookingsheet.time_slots.all %}
+    <li class="list-group-item">{{ time_slot }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+{% endblock %}
+
