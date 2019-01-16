@@ -12,7 +12,7 @@ $ pyenv/bin/pip install -r requirements.txt
 $ pyenv/bin/python manage.py migrate
 $ pyenv/bin/python manage.py createsuperuser
 $ pyenv/bin/python manage.py runserver
-```
+
 This will start a development web server on http://127.0.0.1:8000/
 
 A more production ready setup can be created by following the
