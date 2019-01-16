@@ -1,19 +1,29 @@
 {% extends 'zebracrossing/base.html' %}
-{% load static %}
+{% load static widget_tweaks %}
+
+{% block extra_head %}
+{{ block.super }}
+{{ form.media }}
+{% endblock %}
+
 {% block content %}
 <h1>Add New Campaign</h1>
 <div class="col-sm-6">
-  <div class="form-group">
-    <form enctype="multipart/form-data" action="{% url 'campaigns:add_campaign' %}" method="post">
-      {% csrf_token %}
-      {% for field in form %}
-      <div class="form-item">
-        {{ field.errors }}
-        {{ field.label_tag }} {{ field }}
+  <form enctype="multipart/form-data" action="{% url 'campaigns:add_campaign' %}" method="post">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="form-group">
+      <div class="alert alert-danger" role="alert">
+        {{ error }}
       </div>
       {% endfor %}
-      <input type="submit" value="Add" />
-    </form>
-  </div>
+      <label class="control-label" for="{{ field.id_for_label }}">{{ field.label }}:</label>
+      {{ field|add_class:'form-control' }}
+    </div>
+    {% endfor %}
+    <div class="form-group">
+      <button class="btn btn-primary" id="submit-btn" type="submit">Add</button>
+    </div>
+  </form>
 </div>
 {% endblock %}

@@ -1,5 +1,6 @@
 from django import forms
 
+from zebracrossing.forms import CalendarWidget, FileWidget
 from .models import BookingSheet, Campaign, TimeSlot
 
 class BookingSheetForm(forms.ModelForm):
@@ -8,8 +9,9 @@ class BookingSheetForm(forms.ModelForm):
         model = BookingSheet
         fields = ['material', 'ad_type', 'start_date', 'end_date', 'cost', 'time_slots']
         widgets = {
-            'start_date': forms.DateInput(attrs={'class': 'date-input'}),
-            'end_date': forms.DateInput(attrs={'class': 'date-input'}),
+            'material': FileWidget,
+            'start_date': CalendarWidget,
+            'end_date': CalendarWidget,
             'time_slots': forms.CheckboxSelectMultiple(),
         }
 

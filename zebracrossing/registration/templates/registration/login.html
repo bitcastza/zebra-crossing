@@ -1,6 +1,8 @@
 {% extends 'zebracrossing/base.html' %}
+{% load widget_tweaks %}
 
 {% block content %}
+<h1>Sign In</h1>
 {% if form.errors %}
 <div class="alert alert-danger">
   <p>Your username and password didn't match. Please try again.</p>
@@ -8,29 +10,34 @@
 {% endif %}
 
 {% if next %}
-  {% if user.is_authenticated %}
-  <div class="alert alert-warning">
+{% if user.is_authenticated %}
+<div class="alert alert-warning">
   <p>Your account doesn't have access to this page. To proceed,
   please login with an account that has access.</p>
 </div>
-  {% endif %}
+{% endif %}
 {% endif %}
 
 <div class="col-sm-6">
   <div class="form-group">
     <form method="post" action="{% url 'registration:login' %}">
       {% csrf_token %}
-      <div class="form-item">
-        <td>{{ form.username.label_tag }}</td>
-        <td>{{ form.username }}</td>
+      {% for hidden in form.hidden_fields %}
+      {{ hidden }}
+      {% endfor %}
+
+      {% for field in form.visible_fields %}
+      <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field|add_class:'form-control' }}
+        {% for error in field.errors %}
+        <span class="help-block">{{ error }}</span>
+        {% endfor %}
       </div>
-      <div class="form-item">
-        <td>{{ form.password.label_tag }}</td>
-        <td>{{ form.password }}</td>
-      </div>
+      {% endfor %}
 
       <div>
-        <input type="submit" value="Login" />
+        <input class="btn btn-primary" type="submit" value="Login" />
         <input type="hidden" name="next" value="{{ next }}" />
       </div>
     </form>
