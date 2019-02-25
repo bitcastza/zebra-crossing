@@ -30,7 +30,6 @@ class BookingSheet(models.Model):
     end_date = models.DateField(_('end date'))
     campaign = models.ForeignKey('Campaign', on_delete=models.CASCADE)
     material = models.FileField(upload_to=upload_to_campaign)
-    time_slots = models.ManyToManyField(TimeSlot)
     cost = models.IntegerField()
 
     def clean_fields(self, exclude=None):

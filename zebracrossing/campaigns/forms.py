@@ -3,22 +3,29 @@ from django import forms
 from zebracrossing.forms import CalendarWidget, FileWidget
 from .models import BookingSheet, Campaign, TimeSlot
 
+
 class BookingSheetForm(forms.ModelForm):
-    time_slot_flexiblility = forms.IntegerField(label='Flexibility after time slot')
     class Meta:
         model = BookingSheet
-        fields = ['material', 'ad_type', 'start_date', 'end_date', 'cost', 'time_slots']
+        fields = ['material', 'ad_type', 'start_date', 'end_date', 'cost']
         widgets = {
             'material': FileWidget,
             'start_date': CalendarWidget,
             'end_date': CalendarWidget,
-            'time_slots': forms.CheckboxSelectMultiple(),
         }
 
     def clean(self):
         cleaned_data = super().clean()
         old_cleaned_data = cleaned_data
-        print(self.errors)
+        return cleaned_data
+
+    def clean_time_slots_UNUSED(cleaned_data):
+        """
+        Places ads in time slots based on the provided times and flexibility. It
+        is currently unused because it needs a better way of displaying
+        timeslots and allowing them to be selected. Once that is fixed, this
+        should be called from clean().
+        """
         for slot in old_cleaned_data['time_slots']:
             current_bookings = BookingSheet.objects.filter(time_slots__time=slot.time)
             if current_bookings.count() > 0:
@@ -41,7 +48,6 @@ class BookingSheetForm(forms.ModelForm):
                         min_slot = start_time_slot
                 cleaned_data['time_slots'].filter(id=slot.id).update(time=min_slot.time)
         cleaned_data['time_slot_flexiblility'] = 0
-        return cleaned_data
 
 
 class CampaignForm(forms.ModelForm):
