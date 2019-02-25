@@ -55,12 +55,6 @@ class BookingSheet(models.Model):
                     self.end_date == other.end_date and \
                     self.campaign == other.campaign and \
                     self.cost == other.cost
-            if not result:
-                return False
-            for slot in self.time_slots.all():
-                for other_slot in other.time_slots.all():
-                    if slot != other_slot:
-                        return False
             return result
         return False
 
