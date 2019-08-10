@@ -1,6 +1,5 @@
 stages:
     - test
-    - deploy
 
 test:unit-3:
     script:
@@ -9,14 +8,3 @@ test:unit-3:
         - python3 --version
         - python3 -m django --version
         - python3 ./manage.py test --parallel 5
-
-deploy:staging:
-    stage: deploy
-    script:
-        - apt-get update && apt-get install -y -qq ansible git
-        - ./scripts/deploy.sh
-    environment:
-        name: staging
-        url: https://zebratest.paddatrapper.com
-    only:
-        - master
