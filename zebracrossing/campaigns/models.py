@@ -1,4 +1,5 @@
 from datetime import date
+from pathlib import Path
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -17,7 +18,7 @@ class TimeSlot(models.Model):
 
 class BookingSheet(models.Model):
     def upload_to_campaign(instance, filename):
-        return "campaigns/{0}/bookings/{1}".format(instance.campaign.id, filename)
+        return f"campaigns/{instance.campaign.id}/bookings/{filename}"
 
     AD_TYPES = (
         ('SM', 'Social Media'),
@@ -28,8 +29,8 @@ class BookingSheet(models.Model):
     ad_type = models.CharField(_('type'), max_length=100, choices=AD_TYPES)
     start_date = models.DateField(_('start date'))
     end_date = models.DateField(_('end date'))
-    campaign = models.ForeignKey('Campaign', on_delete=models.CASCADE)
-    material = models.FileField(upload_to=upload_to_campaign)
+    campaign = models.ForeignKey('Campaign', on_delete=models.CASCADE, related_name='booking_sheets')
+    booking_sheet = models.FileField(upload_to=upload_to_campaign)
     cost = models.IntegerField()
 
     def clean_fields(self, exclude=None):
@@ -43,8 +44,8 @@ class BookingSheet(models.Model):
             raise ValidationError(_("Campaign not specified"))
 
     def __str__(self):
-        return self.campaign.get_client() + " (" + \
-                self.campaign.get_ad_agency() + "): " + \
+        return self.campaign.client + " (" + \
+                self.campaign.ad_agency + "): " + \
                 self.start_date.strftime("%Y/%m/%d") + " - " + \
                 self.end_date.strftime("%Y/%m/%d") + " (" + self.ad_type + ")"
 
@@ -70,14 +71,9 @@ class Campaign(models.Model):
             return self.client == other.client and self.ad_agency == other.ad_agency
         return False;
 
-    def get_client(self):
-        return self.client
-
-    def get_ad_agency(self):
-        return self.ad_agency
-
-    def get_start_date(self):
-        booking_sheets = BookingSheet.objects.filter(campaign=self.id)
+    @property
+    def start_date(self):
+        booking_sheets = self.booking_sheets.all()
         if len(booking_sheets) == 0:
             return None
         start_date = date.max
@@ -86,8 +82,9 @@ class Campaign(models.Model):
                 start_date = sheet.start_date
         return start_date
 
-    def get_end_date(self):
-        booking_sheets = BookingSheet.objects.filter(campaign=self.id)
+    @property
+    def end_date(self):
+        booking_sheets = self.booking_sheets.all()
         if len(booking_sheets) == 0:
             return None
         end_date = date.min
@@ -96,20 +93,28 @@ class Campaign(models.Model):
                 end_date = sheet.end_date
         return end_date
 
-    def get_cost(self):
+    @property
+    def cost(self):
         cost = 0
-        booking_sheets = BookingSheet.objects.filter(campaign=self.id)
-        for booking in booking_sheets:
+        for booking in self.booking_sheets.all():
             cost += booking.cost
         return cost
 
-    def get_booking_sheets(self):
-        return BookingSheet.objects.filter(campaign=self.id)
-
     def is_active(self):
         today = date.today()
-        start_date = self.get_start_date()
-        end_date = self.get_end_date()
+        start_date = self.start_date
+        end_date = self.end_date
         if start_date == None or end_date == None:
             return False
         return start_date <= today and end_date >= today
+
+class Material(models.Model):
+    def upload_to_campaign(instance, filename):
+        return f"campaigns/{instance.campaign.id}/material/{filename}"
+
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='material')
+    material = models.FileField(upload_to=upload_to_campaign)
+
+    def __str__(self):
+        p = Path(self.material.name)
+        return f'{p.name}'

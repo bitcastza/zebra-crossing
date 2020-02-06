@@ -27,7 +27,7 @@ class BookingSheetTests(TestCase):
                                      start_date=datetime.date(year=2018, month=4, day=2),
                                      end_date=datetime.date(year=2018, month=2, day=2),
                                      campaign=campaign,
-                                     material=File(cls.fp),
+                                     booking_sheet=File(cls.fp),
                                      cost=220)
         cls.booking_sheet.save()
 
@@ -51,7 +51,7 @@ class BookingSheetTests(TestCase):
                                      start_date=datetime.date(year=2018, month=4, day=2),
                                      end_date=datetime.date(year=2018, month=2, day=2),
                                      campaign=campaign,
-                                     material=File(fp),
+                                     booking_sheet=File(fp),
                                      cost=220)
         booking_sheet.save()
         self.assertEqual(self.booking_sheet, booking_sheet)
@@ -79,7 +79,7 @@ class BookingSheetFormTests(TestCase):
                      'start_date': '2018-05-07',
                      'end_date': '2018-05-21',
                      'cost': '200',}
-        booking = BookingSheet(campaign=campaign, material=File(cls.fp))
+        booking = BookingSheet(campaign=campaign, booking_sheet=File(cls.fp))
         cls.form = BookingSheetForm(data=form_data, instance=booking)
 
     @classmethod

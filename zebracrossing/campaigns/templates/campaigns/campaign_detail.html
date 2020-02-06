@@ -4,7 +4,7 @@
 <p>
 Client: {{ campaign.client }}<br>
 Ad Agency: {{ campaign.ad_agency }}<br>
-Cost: R {{ campaign.get_cost }}<br>
+Cost: R {{ campaign.cost }}<br>
 </p>
 
 <div id="booking_sheets" class="row">
@@ -16,10 +16,27 @@ Cost: R {{ campaign.get_cost }}<br>
   </div>
 </div>
 
-{% if campaign.get_booking_sheets %}
+{% if campaign.booking_sheets %}
   <ul class="list-group">
-    {% for sheet in campaign.get_booking_sheets %}
-    <li class="list-group-item"><a href="{% url 'campaigns:download_booking_sheet' sheet.id %}">{{ sheet.get_ad_type_display }}: {{ sheet.start_date }} - {{ sheet.end_date }}</a></li>
+    {% for sheet in campaign.booking_sheets.all %}
+    <li class="list-group-item"><a href="{% url 'campaigns:show_booking' sheet.id %}">{{ sheet.get_ad_type_display }}: {{ sheet.start_date }} - {{ sheet.end_date }}</a></li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<div id="material" class="row">
+  <div class="col-sm-10">
+    <h2>Material</h2>
+  </div>
+  <div class="col-sm-2">
+    <a href="{% url 'campaigns:add_material' campaign.id %}" class="btn btn-primary heading-btn" role="button">Add material</a>
+  </div>
+</div>
+
+{% if campaign.material %}
+  <ul class="list-group">
+    {% for material in campaign.material.all %}
+    <li class="list-group-item"><a href="{% url 'campaigns:download_material' material.id %}">{{ material }}</a></li>
     {% endfor %}
   </ul>
 {% endif %}

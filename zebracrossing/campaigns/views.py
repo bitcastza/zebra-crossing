@@ -5,15 +5,18 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import mixins
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
-from django.views import generic
+from django.views.generic import DetailView
+from django.views.generic.edit import CreateView
+from django.urls import reverse, reverse_lazy
 
-from .models import BookingSheet, Campaign
-from .forms import BookingSheetForm, CampaignForm
+from zebracrossing.forms import CalendarWidget, FileWidget
+from .models import BookingSheet, Campaign, Material
+from .forms import BookingSheetForm, CampaignForm, MaterialForm
 
-class CampaignView(mixins.LoginRequiredMixin, generic.DetailView):
+class CampaignView(mixins.LoginRequiredMixin, DetailView):
     model = Campaign
 
-class BookingView(mixins.LoginRequiredMixin, generic.DetailView):
+class BookingView(mixins.LoginRequiredMixin, DetailView):
     model = BookingSheet
 
 @login_required
@@ -23,8 +26,8 @@ def index(request):
     upcoming_campaigns = []
     past_campaigns = []
     for campaign in campaigns:
-        start_date = campaign.get_start_date()
-        end_date = campaign.get_end_date()
+        start_date = campaign.start_date
+        end_date = campaign.end_date
         if campaign.is_active():
             active_campaigns.append(campaign)
         elif end_date != None and end_date < date.today():
@@ -39,56 +42,58 @@ def index(request):
     }
     return render(request, 'campaigns/index.html', context)
 
-@login_required
-def add_booking(request, campaign_id):
-    if request.method == "POST":
-        campaign = Campaign.objects.get(id=campaign_id)
-        booking = BookingSheet(campaign=campaign)
-        form = BookingSheetForm(request.POST, request.FILES, instance=booking)
-        if form.is_valid():
-            booking = form.save()
-            return redirect('campaigns:detail', campaign_id)
-        else:
-            context = {
-                'form': form,
-                'campaign': campaign,
-            }
-            return render(request, 'campaigns/add_booking.html', context)
+class BookingSheetCreate(mixins.LoginRequiredMixin, CreateView):
+    template_name = 'campaigns/add_update_object.html'
+    form_class = BookingSheetForm
 
-    else:
-        campaign = get_object_or_404(Campaign, pk=campaign_id)
-        form = BookingSheetForm(initial={'cost': 0, 'time_slot_flexiblility': 0})
-        context = {
-            'form': form,
-            'campaign': campaign,
-        }
-        return render(request, 'campaigns/add_booking.html', context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Upload Booking Sheet'
+        context['url'] = reverse('campaigns:add_booking', args=[self.kwargs['campaign_id']])
+        return context
 
-@login_required
-def add_campaign(request):
-    if request.method == "POST":
-        form = CampaignForm(request.POST, request.FILES)
-        if form.is_valid():
-            campaign = form.save()
-            return redirect("campaigns:add_booking", campaign_id=campaign.id)
-        else:
-            context = {
-                'form': form,
-                'campaign': campaign,
-            }
-            return render(request, 'campaigns/add_campaign.html', context)
+    def get_success_url(self):
+        return redirect('campaigns:detail', self.kwargs['campaign_id'])
 
-    else:
-        form = CampaignForm()
-        context = {
-            'form': form,
-        }
-        return render(request, 'campaigns/add_campaign.html', context)
+class MaterialCreate(mixins.LoginRequiredMixin, CreateView):
+    template_name = 'campaigns/add_update_object.html'
+    form_class = MaterialForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Upload Material'
+        context['url'] = reverse('campaigns:add_material', args=[self.kwargs['campaign_id']])
+        return context
+
+    def get_success_url(self):
+        return redirect('campaigns:detail', self.kwargs['campaign_id'])
+
+class CampaignCreate(mixins.LoginRequiredMixin, CreateView):
+    template_name = 'campaigns/add_update_object.html'
+    form_class = CampaignForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Add New Campaign'
+        context['url'] = reverse('campaigns:add_campaign')
+        return context
+
+    def get_success_url(self):
+        return redirect('campaigns:add_booking', self.obj.id)
 
 @login_required
 def download_booking_sheet(request, booking_id):
     booking = get_object_or_404(BookingSheet, pk=booking_id)
-    mimetype = mimetypes.guess_type(booking.material.url)[0]
-    response = HttpResponse(booking.material, content_type=mimetype)
-    response['Content-Disposition'] = 'filename="' + booking.material.name + '"\''
+    return download_item(request, booking.booking_sheet)
+
+@login_required
+def download_material(request, material_id):
+    material = get_object_or_404(Material, pk=material_id)
+    return download_item(request, material.material)
+
+@login_required
+def download_item(request, item):
+    mimetype = mimetypes.guess_type(item.url)[0]
+    response = HttpResponse(item, content_type=mimetype)
+    response['Content-Disposition'] = f'filename="{item.name}"'
     return response

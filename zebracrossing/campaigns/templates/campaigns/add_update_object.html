@@ -7,9 +7,8 @@
 {% endblock %}
 
 {% block content %}
-<h1>Add New Campaign</h1>
 <div class="col-sm-6">
-  <form enctype="multipart/form-data" action="{% url 'campaigns:add_campaign' %}" method="post">
+  <form enctype="multipart/form-data" action="{{ url }}" method="post">
     {% csrf_token %}
     {% for field in form %}
     <div class="form-group">
@@ -18,8 +17,22 @@
         {{ error }}
       </div>
       {% endfor %}
+      {% if field|widget_type == "filewidget" %}
+      <div class="custom-file">
+        {{ field|add_class:'custom-file-input' }}
+        <label class="custom-file-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+      </div>
+      {% elif field|widget_type == "checkboxselectmultiple" %}
+      <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}:</label>
+      {% for field in field %}
+      <div class="form-check">
+        {{ field }}
+      </div>
+      {% endfor %}
+      {% else %}
       <label class="control-label" for="{{ field.id_for_label }}">{{ field.label }}:</label>
       {{ field|add_class:'form-control' }}
+      {% endif %}
     </div>
     {% endfor %}
     <div class="form-group">
