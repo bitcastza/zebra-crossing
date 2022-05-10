@@ -1,12 +1,12 @@
 /*!
- * bsCustomFileInput v1.3.1 (https://github.com/Johann-S/bs-custom-file-input)
- * Copyright 2018 Johann-S <johann.servoire@gmail.com>
+ * bsCustomFileInput v1.3.4 (https://github.com/Johann-S/bs-custom-file-input)
+ * Copyright 2018 - 2020 Johann-S <johann.servoire@gmail.com>
  * Licensed under MIT (https://github.com/Johann-S/bs-custom-file-input/blob/master/LICENSE)
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
-  (global.bsCustomFileInput = factory());
+  (global = global || self, global.bsCustomFileInput = factory());
 }(this, (function () { 'use strict';
 
   var Selector = {
@@ -23,7 +23,7 @@
     var label = input.parentNode.querySelector(Selector.CUSTOMFILELABEL);
 
     if (label) {
-      defaultText = label.innerHTML;
+      defaultText = label.textContent;
     }
 
     return defaultText;
@@ -51,7 +51,7 @@
 
     if (label) {
       var element = findFirstChildNode(label);
-      element.innerHTML = defaultText;
+      element.textContent = defaultText;
     }
   };
 
@@ -82,7 +82,7 @@
       var inputValue = getSelectedFiles(this);
 
       if (inputValue.length) {
-        element.innerHTML = inputValue;
+        element.textContent = inputValue;
       } else {
         restoreDefaultText(this);
       }
@@ -125,6 +125,7 @@
           },
           writable: true
         });
+        handleInputChange.call(input);
         input.addEventListener(Event.INPUTCHANGE, handleInputChange);
       }
 
