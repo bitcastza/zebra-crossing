@@ -1,8 +1,8 @@
 /*
- * Gijgo JavaScript Library v1.9.11
+ * Gijgo JavaScript Library v1.9.13
  * http://gijgo.com/
  *
- * Copyright 2014, 2018 gijgo.com
+ * Copyright 2014, 2019 gijgo.com
  * Released under the MIT license
  */
 var gj = {};
@@ -260,7 +260,8 @@ gj.core = {
             am: 'AM',
             pm: 'PM',
             ok: 'Ok',
-            cancel: 'Cancel'
+            cancel: 'Cancel',
+            titleFormat: 'mmmm yyyy'
         }
     },
 
@@ -311,8 +312,13 @@ gj.core = {
             } else if (value.indexOf('/Date(') > -1) {
                 result = new Date(parseInt(value.substr(6), 10));
             } else if (value) {
-                dateParts = value.split(/[\s,-\.//\:]+/);
                 formatParts = format.split(/[\s,-\.//\:]+/);
+                // Split only by spaces
+                dateParts = value.split(/[\s]+/);
+                // Split by other chars if the split by spaces doesn't work
+                if (dateParts.length != formatParts.length) {
+                    dateParts = value.split(/[\s,-\.//\:]+/);
+                }
                 for (i = 0; i < formatParts.length; i++) {
                     if (['d', 'dd'].indexOf(formatParts[i]) > -1) {
                         date = parseInt(dateParts[i], 10);
@@ -513,6 +519,10 @@ gj.core = {
 
         if (style.boxSizing === 'border-box') { // border-box include padding and border within the height
             result = parseInt(style.height, 10);
+            if (gj.core.isIE()) {
+                result += parseInt(style.paddingTop || 0, 10) + parseInt(style.paddingBottom || 0, 10);
+                result += parseInt(style.borderTopWidth || 0, 10) + parseInt(style.borderBottomWidth || 0, 10);
+            }
         } else {
             result = parseInt(style.height, 10);
             result += parseInt(style.paddingTop || 0, 10) + parseInt(style.paddingBottom || 0, 10);
@@ -2841,7 +2851,7 @@ gj.grid.config = {
              *         dataSource: '/Players/Get',
              *         uiLibrary: 'bootstrap4',
              *         columns: [
-             *             { field: 'ID', width: 34 },
+             *             { field: 'ID', width: 46 },
              *             { field: 'Name', title: 'Player' },
              *             { field: 'PlaceOfBirth', title: 'Place of Birth' },
              *             { title: 'Active?', field: 'IsActive', width: 80, type: 'checkbox', align: 'center' }
@@ -6618,6 +6628,7 @@ gj.grid.plugins.inlineEditing.private = {
                         config.uiLibrary = data.uiLibrary;
                         config.iconsLibrary = data.iconsLibrary;
                         config.fontSize = $grid.css('font-size');
+                        config.showOnFocus = false;
                         if ('checkbox' === column.type && gj.checkbox) {
                             $editorField = $('<input type="checkbox" />').prop('checked', value);
                             $editorContainer.append($editorField);
@@ -8689,7 +8700,7 @@ gj.grid.plugins.export = {
             if (records.length) {
 
                 for (i = 0; i < columns.length; i++) {
-                    if (columns[i].hidden !== true) {
+                    if (gj.grid.plugins.export.public.isColumnApplicable(columns[i])) {
                         line += '"' + (columns[i].title || columns[i].field).replace(/<[^>]+>/g, ' ') + '",';
                     }
                 }
@@ -8699,7 +8710,7 @@ gj.grid.plugins.export = {
                     line = '';
 
                     for (j = 0; j < columns.length; j++) {
-                        if (columns[j].hidden !== true) {
+                        if (gj.grid.plugins.export.public.isColumnApplicable(columns[j])) {
                             line += '"' + records[i][columns[j].field] + '",';
                         }
                     }                    
@@ -8749,11 +8760,19 @@ gj.grid.plugins.export = {
         downloadCSV: function (filename, includeAllRecords) {
             var link = document.createElement('a');
             document.body.appendChild(link);
-            link.download = filename || 'griddata.csv';
-            link.href = 'data:text/csv;charset=utf-8,' + escape(this.getCSV(includeAllRecords));
+            link.download = filename || 'griddata.csv'; 
+            if (window.navigator.userAgent.indexOf("Edge") > -1) {
+                link.href = URL.createObjectURL(new Blob([this.getCSV(includeAllRecords)], { type: 'text/csv;charset=utf-8;' }));
+            } else {
+                link.href = 'data:text/csv;charset=utf-8,' + escape(this.getCSV(includeAllRecords));
+            }
             link.click();
             document.body.removeChild(link);
             return this;
+        },
+
+        isColumnApplicable: function (column) {
+            return column.hidden !== true && !column.role;
         }
     },
 
@@ -13610,14 +13629,21 @@ gj.dropdown.methods = {
         var data = $dropdown.data(),
             $list = $('body').children('[role="list"][guid="' + $dropdown.attr('data-guid') + '"]'),
             $item = $list.children('li[value="' + value + '"]'),
+            $display = $dropdown.next('[role="presenter"]').find('[role="display"]'),
             record = gj.dropdown.methods.getRecordByValue($dropdown, value);
+
+        $list.children('li').removeClass(data.style.active);
         if (record) {
-            $list.children('li').removeClass(data.style.active);
             $item.addClass(data.style.active);
             $dropdown[0].value = value;
-            $dropdown.next('[role="presenter"]').find('[role="display"]').html(record[data.textField]);
-            gj.dropdown.events.change($dropdown);
+            $display[0].innerHTML = record[data.textField];
+        } else {
+            if (data.placeholder) {
+                $display[0].innerHTML = '<span class="placeholder">' + data.placeholder + '</span>';
+            }
+            $dropdown[0].value = '';
         }
+        gj.dropdown.events.change($dropdown);
         gj.dropdown.methods.close($dropdown, $list);
         return $dropdown;
     },
@@ -14218,6 +14244,30 @@ gj.datepicker.config = {
          *        format: 'dd/mm/yyyy'
          *    });
          * </script>
+         * @example Japanise <!-- datepicker -->
+         * <input id="datepicker" width="276" />
+         * <script>
+         *    $('#datepicker').datepicker({
+         *        locale: 'ja-jp',
+         *        format: 'dd mmmm yyyy'
+         *    });
+         * </script>
+         * @example Chinise_Simplified <!-- datepicker -->
+         * <input id="datepicker" width="276" />
+         * <script>
+         *    $('#datepicker').datepicker({
+         *        locale: 'zh-cn',
+         *        format: 'dd mmmm yyyy'
+         *    });
+         * </script>
+         * @example Chinise_Traditional <!-- datepicker -->
+         * <input id="datepicker" width="276" />
+         * <script>
+         *    $('#datepicker').datepicker({
+         *        locale: 'zh-tw',
+         *        format: 'dd mmmm yyyy'
+         *    });
+         * </script>
          */
         locale: 'en-us',
 
@@ -14646,7 +14696,8 @@ gj.datepicker.methods = {
         var weekDay, selectedDay, day, month, year, daysInMonth, total, firstDayPosition, i, now, prevMonth, nextMonth, $cell, $day, date,
             $body = $calendar.children('[role="body"]'),
             $table = $('<table/>'),
-            $tbody = $('<tbody/>');
+            $tbody = $('<tbody/>'),
+            period = gj.core.messages[data.locale].titleFormat;
         
         $body.off().empty();
         gj.datepicker.methods.createNavigation($datepicker, $body, $table, data);
@@ -14655,8 +14706,8 @@ gj.datepicker.methods = {
         year = parseInt($calendar.attr('year'), 10);
 
         $calendar.attr('type', 'month');
-        $calendar.find('div[role="period"]').text(gj.core.messages[data.locale].monthNames[month] + ' ' + year);
-
+        period = period.replace('mmmm', gj.core.messages[data.locale].monthNames[month]).replace('yyyy', year);
+        $calendar.find('div[role="period"]').text(period);
         daysInMonth = new Array(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
         if (year % 4 == 0 && year != 1900) {
             daysInMonth[1] = 29;
@@ -15211,6 +15262,8 @@ gj.datepicker.methods = {
             if (date && date.getTime()) {
                 $calendar = $('body').find('[role="calendar"][guid="' + $datepicker.attr('data-guid') + '"]');
                 gj.datepicker.methods.dayClickHandler($datepicker, $calendar, data, date)();
+            } else {
+                $datepicker.val('');
             }
             return $datepicker;
         }
