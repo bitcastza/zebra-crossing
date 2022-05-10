@@ -4,3 +4,4 @@ __pycache__/
 *.sqlite3
 /campaigns/
 zebracrossing/local_settings.py
+bower_components/
