@@ -1,8 +1,0 @@
-{
-  "name": "zebra-crossing",
-  "version": "0.0.0",
-  "dependencies": {
-    "bootstrap": "4.6.1",
-    "jquery": "3.3.1"
-  }
-}
