@@ -78,7 +78,8 @@ class BookingSheetFormTests(TestCase):
         form_data = {'ad_type': 'REC',
                      'start_date': '2018-05-07',
                      'end_date': '2018-05-21',
-                     'cost': '200',}
+                     'cost': '200',
+                     'campaign': campaign,}
         booking = BookingSheet(campaign=campaign, booking_sheet=File(cls.fp))
         cls.form = BookingSheetForm(data=form_data, instance=booking)
 

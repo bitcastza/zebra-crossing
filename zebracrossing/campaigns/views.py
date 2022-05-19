@@ -3,13 +3,12 @@ import mimetypes
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import mixins
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 
-from zebracrossing.forms import CalendarWidget, FileWidget
 from .models import BookingSheet, Campaign, Material
 from .forms import BookingSheetForm, CampaignForm, MaterialForm
 
@@ -49,11 +48,16 @@ class BookingSheetCreate(mixins.LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Upload Booking Sheet'
-        context['url'] = reverse('campaigns:add_booking', args=[self.kwargs['campaign_id']])
+        context['url'] = reverse('campaigns:add_booking', kwargs={'campaign_id': self.kwargs['campaign_id']})
         return context
 
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['campaign'] = Campaign.objects.get(id=self.kwargs['campaign_id'])
+        return initial
+
     def get_success_url(self):
-        return redirect('campaigns:detail', self.kwargs['campaign_id'])
+        return reverse('campaigns:detail', kwargs={'pk': self.kwargs['campaign_id']})
 
 class MaterialCreate(mixins.LoginRequiredMixin, CreateView):
     template_name = 'campaigns/add_update_object.html'
@@ -62,11 +66,16 @@ class MaterialCreate(mixins.LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Upload Material'
-        context['url'] = reverse('campaigns:add_material', args=[self.kwargs['campaign_id']])
+        context['url'] = reverse('campaigns:add_material', kwargs={'campaign_id': self.kwargs['campaign_id']})
         return context
 
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['campaign'] = Campaign.objects.get(id=self.kwargs['campaign_id'])
+        return initial
+
     def get_success_url(self):
-        return redirect('campaigns:detail', self.kwargs['campaign_id'])
+        return reverse('campaigns:detail', kwargs={'pk': self.kwargs['campaign_id']})
 
 class CampaignCreate(mixins.LoginRequiredMixin, CreateView):
     template_name = 'campaigns/add_update_object.html'
@@ -79,7 +88,7 @@ class CampaignCreate(mixins.LoginRequiredMixin, CreateView):
         return context
 
     def get_success_url(self):
-        return redirect('campaigns:add_booking', self.obj.id)
+        return reverse('campaigns:add_booking', kwargs={'campaign_id': self.object.id})
 
 @login_required
 def download_booking_sheet(request, booking_id):
