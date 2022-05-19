@@ -1,21 +1,23 @@
 {% load static %}
+{% load django_bootstrap5 %}
+
 <!DOCTYPE html>
 <html>
   <head>
     <title>{% block title %}Zebra Crossing{% endblock %}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="{% static 'vendor/bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet" media="screen">
+    {% bootstrap_css %}
     <link href="{% static 'css/zebracrossing.css' %}" rel="stylesheet" media="screen">
     <link rel="stylesheet" href="{% static 'fontawesomefree/css/all.min.css' %}">
-    <script src="{% static 'vendor/jquery/dist/jquery.min.js' %}"></script>
-    <script src="{% static 'vendor/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+    {% bootstrap_javascript %}
     {% block extra_head %}{% endblock %}
   </head>
   <body>
     {% include "zebracrossing/nav.html" %}
     <div id="main" class="container {% block container_class %}{% endblock %}">
       {% block pre_content %} {% endblock %}
+      {% bootstrap_messages %}
       {% block pretitle %}{% endblock %}
       {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
       {% block content %}

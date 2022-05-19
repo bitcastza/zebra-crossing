@@ -1,5 +1,5 @@
 {% extends 'zebracrossing/base.html' %}
-{% load static widget_tweaks %}
+{% load django_bootstrap5 %}
 
 {% block extra_head %}
 {{ block.super }}
@@ -10,34 +10,8 @@
 <div class="col-sm-6">
   <form enctype="multipart/form-data" action="{{ url }}" method="post">
     {% csrf_token %}
-    {% for field in form %}
-    <div class="form-group">
-      {% for error in field.errors %}
-      <div class="alert alert-danger" role="alert">
-        {{ error }}
-      </div>
-      {% endfor %}
-      {% if field|widget_type == "filewidget" %}
-      <div class="custom-file">
-        {{ field|add_class:'custom-file-input' }}
-        <label class="custom-file-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-      </div>
-      {% elif field|widget_type == "checkboxselectmultiple" %}
-      <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}:</label>
-      {% for field in field %}
-      <div class="form-check">
-        {{ field }}
-      </div>
-      {% endfor %}
-      {% else %}
-      <label class="control-label" for="{{ field.id_for_label }}">{{ field.label }}:</label>
-      {{ field|add_class:'form-control' }}
-      {% endif %}
-    </div>
-    {% endfor %}
-    <div class="form-group">
-      <button class="btn btn-primary" id="submit-btn" type="submit">Add</button>
-    </div>
+    {% bootstrap_form form %}
+    {% bootstrap_button button_type="submit" content="Add" %}
   </form>
 </div>
 {% endblock %}

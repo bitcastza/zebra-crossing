@@ -1,5 +1,5 @@
 {% extends 'zebracrossing/base.html' %}
-{% load widget_tweaks %}
+{% load django_bootstrap5 %}
 
 {% block content %}
 <h1>Sign In</h1>
@@ -22,24 +22,8 @@
   <div class="form-group">
     <form method="post" action="{% url 'registration:login' %}">
       {% csrf_token %}
-      {% for hidden in form.hidden_fields %}
-      {{ hidden }}
-      {% endfor %}
-
-      {% for field in form.visible_fields %}
-      <div class="form-group">
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-        {{ field|add_class:'form-control' }}
-        {% for error in field.errors %}
-        <span class="help-block">{{ error }}</span>
-        {% endfor %}
-      </div>
-      {% endfor %}
-
-      <div>
-        <input class="btn btn-primary" type="submit" value="Login" />
-        <input type="hidden" name="next" value="{{ next }}" />
-      </div>
+      {% bootstrap_form form %}
+      {% bootstrap_button button_type="submit" content="Login" %}
     </form>
   </div>
   <p><a href="{% url 'registration:password_reset' %}">Forgotten password?</a></p>
