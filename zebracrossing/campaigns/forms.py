@@ -1,7 +1,7 @@
 from django import forms
 
 from zebracrossing.forms import CalendarWidget
-from .models import BookingSheet, Campaign, TimeSlot, Material
+from .models import BookingSheet, Campaign, Material
 
 
 class BookingSheetForm(forms.ModelForm):

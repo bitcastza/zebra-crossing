@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import datetime, date, timedelta
 import mimetypes
 
 from django.contrib.auth.decorators import login_required
@@ -9,11 +9,54 @@ from django.views.generic import DetailView
 from django.views.generic.edit import CreateView
 from django.urls import reverse
 
-from .models import BookingSheet, Campaign, Material
+from .models import BookingSheet, Campaign, Material, TimeSlot, BookedDay
 from .forms import BookingSheetForm, CampaignForm, MaterialForm
+from django.http import JsonResponse
+import json
+
 
 class CampaignView(mixins.LoginRequiredMixin, DetailView):
     model = Campaign
+
+    def get_context_data(self, **kwargs):
+
+        sheet = BookingSheet.objects.filter(campaign=self.get_object())[0]
+        table_data = BookedDay.objects.filter(bookingsheet=sheet)
+        all_campaign_slots = TimeSlot.objects.all()
+        bookingsheet = BookingSheet.objects.filter(campaign=self.get_object())
+        
+        for date in bookingsheet:
+            start_date = datetime.strptime(str(date.start_date), "%Y-%m-%d")
+            end_date = datetime.strptime(str(date.end_date), "%Y-%m-%d")
+        
+        all_campaign_dates = [start_date + timedelta(days=x) for x in range((end_date - start_date).days+1)]
+
+        booked_info = {}
+        for data in table_data:
+            booked_info[datetime.strftime(data.date, "%Y-%m-%d")] = str(data.timeslot)
+
+        booking_set = {}
+        for date in all_campaign_dates:
+            day_slots = []
+            for slot in all_campaign_slots:
+                day_slots.append({
+                    'slot_id': slot.id,
+                    'booked': True if (datetime.strftime(date, "%Y-%m-%d"), str(slot)) in booked_info.items() else False
+                })
+            booking_set[date] = day_slots
+        
+        booked_view = []
+        for date, slots in booking_set.items():
+            booked_day = []
+            for slot in slots:                
+                booked_day.append(slot['booked'])
+            booked_view.append(booked_day)
+        
+        context = super().get_context_data(**kwargs)
+        context['timeslots'] = TimeSlot.objects.all()
+        context['booked_day'] = BookedDay.objects.all()
+        context['array'] = json.dumps(booked_view)
+        return context
 
 class BookingView(mixins.LoginRequiredMixin, DetailView):
     model = BookingSheet
@@ -106,3 +149,24 @@ def download_item(request, item):
     response = HttpResponse(item, content_type=mimetype)
     response['Content-Disposition'] = f'filename="{item.name}"'
     return response
+
+def save_to_table(request):
+    arr = json.loads(request.POST.get("arr", ""))
+    date = None
+    time = None
+
+    for data in arr:
+        date  = data['date']
+        time  = data['slot_time']
+
+    result = date[str(date).find('(')+1:str(date).find(')')]    
+    day = result.split("/")[0]
+    month = result.split("/")[1]
+    year = str(datetime.today().year)
+
+    date_object = datetime.strptime('{}-{}-{}'.format(year, month, day), "%Y-%m-%d").date()
+    booking_sheet = BookingSheet.objects.first()
+    timeslot = TimeSlot.objects.raw("SELECT * FROM campaigns_timeslot where time=%s", [time])[0]
+    booking = BookedDay(date=date_object, timeslot=timeslot, bookingsheet=booking_sheet)        
+    booking.save()
+    return JsonResponse({"message": "success"})

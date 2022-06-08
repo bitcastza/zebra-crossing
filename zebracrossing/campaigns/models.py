@@ -16,6 +16,15 @@ class TimeSlot(models.Model):
             return self.time == other.time
         return False
 
+class BookedDay(models.Model):
+    date = models.DateField()
+    timeslot = models.ForeignKey('TimeSlot', on_delete=models.CASCADE)
+    bookingsheet = models.ForeignKey("BookingSheet", on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return self.date.strftime("%Y-%m-%d") + " "+ str(self.timeslot) + " "+ str(self.bookingsheet)
+
+
 class BookingSheet(models.Model):
     def upload_to_campaign(instance, filename):
         return f"campaigns/{instance.campaign.id}/bookings/{filename}"
