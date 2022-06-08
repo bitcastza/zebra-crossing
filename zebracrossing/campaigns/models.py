@@ -118,3 +118,6 @@ class Material(models.Model):
     def __str__(self):
         p = Path(self.material.name)
         return f'{p.name}'
+
+class BookingInfo(models.Model):
+    booking = models.DateTimeField()

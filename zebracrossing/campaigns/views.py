@@ -9,11 +9,20 @@ from django.views.generic import DetailView
 from django.views.generic.edit import CreateView
 from django.urls import reverse
 
-from .models import BookingSheet, Campaign, Material
+from .models import BookingSheet, Campaign, Material, TimeSlot
 from .forms import BookingSheetForm, CampaignForm, MaterialForm
 
 class CampaignView(mixins.LoginRequiredMixin, DetailView):
     model = Campaign
+
+    def get_context_data(self, **kwargs):
+        campaigns = Campaign.objects.all()
+        for campaign in campaigns:
+            start_date = campaign.start_date
+            end_date = campaign.end_date
+        context = super().get_context_data(**kwargs)
+        context['timeslots'] = TimeSlot.objects.all()
+        return context
 
 class BookingView(mixins.LoginRequiredMixin, DetailView):
     model = BookingSheet

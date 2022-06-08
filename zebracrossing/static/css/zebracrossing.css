@@ -7,3 +7,42 @@
   margin-top: 10px;
   margin-bottom: 10px;
 }
+
+table {
+  font-family: arial, sans-serif;
+  width: 100%;
+  border: 1px solid black; 
+}
+
+td, th {
+  border: 1px solid black;
+  text-align: left;
+  padding: 8px;
+}
+
+th {
+ background-color: black;
+ color: white;
+ font-weight: bold
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+
+#pagination_arrows{
+  margin-left: auto; 
+  margin-right: 0;
+}
+
+.w3-button{
+  font-weight: bold;
+  font-size: 30px;
+}
+
+button:disabled,
+button[disabled]{
+  border: 1px solid #999999;
+  background-color: #cccccc;
+  color: #666666;
+}
