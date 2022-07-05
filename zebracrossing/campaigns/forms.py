@@ -26,3 +26,12 @@ class MaterialForm(forms.ModelForm):
         model = Material
         fields = ['material', 'campaign']
         widgets = {'campaign': forms.HiddenInput()}
+    
+class TimeSlotForm(forms.ModelForm):
+    #class Meta:
+    #model = TimeSlot
+    #fields = ["time"]
+    class Meta:
+        model = Material
+        fields = ['material', 'campaign']
+        widgets = {'campaign': forms.HiddenInput()}
