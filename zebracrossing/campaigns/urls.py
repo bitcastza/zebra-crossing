@@ -5,6 +5,7 @@ from . import views
 app_name = "campaigns"
 urlpatterns = [
     path("", views.index, name="index"),
+    path("save_to_table", views.save_to_table, name="save_to_table"),
     path("add_campaign/", views.CampaignCreate.as_view(), name="add_campaign"),
     path("<int:pk>/", views.CampaignView.as_view(), name="detail"),
     path(

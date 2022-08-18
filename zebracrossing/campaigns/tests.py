@@ -1,11 +1,15 @@
 import datetime
 from django.core.exceptions import ValidationError
 from django.core.files import File
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.utils.translation import gettext_lazy as _
+from django.urls import reverse
 
-from .models import BookingSheet, Campaign, TimeSlot
+from .models import BookingSheet, Campaign, TimeSlot, BookedDay
 from .forms import BookingSheetForm
+from django.test.client import RequestFactory
+from .views import save_to_table
+import json
 
 
 class TimeSlotTests(TestCase):
@@ -18,6 +22,46 @@ class TimeSlotTests(TestCase):
         time_slot = TimeSlot(time=datetime.time(hour=8))
         other = TimeSlot(time=datetime.time(hour=8))
         self.assertEqual(time_slot, other)
+
+class SaveToTableTest(TestCase):
+    @classmethod
+    def setUp(self):
+        self.client = Client()
+        self.save_to_table_url = reverse("campaigns:save_to_table")
+        self.fp = open("README.md")
+        campaign = Campaign.objects.create(
+            client="test client", ad_agency="test agency"
+        )
+        self.booking_sheet = BookingSheet(
+            ad_type="REC",
+            start_date=datetime.date(year=2022, month=6, day=20),
+            end_date=datetime.date(year=2022, month=7, day=31),
+            campaign=campaign,
+            booking_sheet=File(self.fp),
+            cost=23000,
+        )
+        self.booking_sheet.save()
+        self.time_slot = TimeSlot(time=datetime.time(hour=12, minute=53))
+        self.time_slot.save()
+        self.booked_day = BookedDay.objects.create(
+            date=datetime.date(2022, 6, 25), timeslot=self.time_slot, bookingsheet=self.booking_sheet
+        )
+        self.booked_day.save()
+    
+    def test_save_to_table(self):
+        try:
+            response = self.client.get(self.save_to_table_url)
+        except json.decoder.JSONDecodeError:
+            pass
+                
+        self.assertEquals(str(self.booked_day.timeslot), "12:53")
+        self.assertEquals(str(self.booked_day.date), "2022-06-25")
+        self.assertEquals(self.booked_day.bookingsheet.cost, 23000)
+    
+    @classmethod
+    def tearDownClass(self):
+        self.fp.close()
+        super().tearDownClass()
 
 
 class BookingSheetTests(TestCase):

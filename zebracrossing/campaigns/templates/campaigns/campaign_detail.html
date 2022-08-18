@@ -40,4 +40,282 @@ Cost: R {{ campaign.cost }}<br>
     {% endfor %}
   </ul>
 {% endif %}
+
+{% block javascript %}
+<script>
+      function get_english_day(dateString){
+        var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        var d = new Date(dateString);
+        var dayName = days[d.getDay()];
+        return dayName
+      }
+
+      function end_of_week(year, month, day){
+        return new Date(year, month, day).getDay() == 1
+      }
+
+      function days_between_dates(start_date, end_date){
+        var start_week_day = []
+        var difference = Math.abs(end_date - start_date)
+        var count = 0
+        days = difference/(1000 * 3600 * 24)
+        for (let i = 0; i < days; i ++){
+          var date = new Date(start_date +  start_date.setDate(start_date.getDate() + 1))
+          count = count + 1
+          start_week_day.push(date);
+          if (count ==7){
+             break;
+          }
+        }
+        return start_week_day
+      }
+
+      function dates_and_days(){
+        my_dict = {}
+        var start_date = new Date("{{ campaign.start_date }}")
+        var end_date = new Date("{{ campaign.end_date }}")
+        my_dict[start_date] = get_english_day(start_date)
+        var difference = Math.abs(end_date - start_date)
+        var days = difference/(1000 * 3600 * 24)
+
+        for (let i=0; i < days; i++){
+          my_dict[new Date(start_date +  start_date.setDate(start_date.getDate() + 1))] = get_english_day(new Date(start_date +  start_date.setDate(start_date.getDate())))
+        }
+        return my_dict
+      }
+
+      function days_ending_a_week(){
+        my_list = []
+        for (let date in dates_and_days()){
+          if (end_of_week(new Date(date).getFullYear(), new Date(date).getMonth(), new Date(date).getDate())){
+              my_list.push(date)
+          }
+        }
+        my_list.push(new Date("{{ campaign.end_date }}"))
+        return my_list
+      }
+
+      let weeks_booked = {}
+      for(let i = 0; i < days_ending_a_week().length-1; i++){
+        try {
+          weeks_booked[i] = days_between_dates(new Date(my_list[i]), new Date(my_list[i+1]))
+        } catch (error) {
+           console.log(error)
+        }
+      }
+      var new_dict = JSON.parse(JSON.stringify(weeks_booked, null, 4))
+      var end_date = new Date('{{campaign.end_date}}')
+
+      if(end_date.getDate() == 31){
+        end_date = JSON.parse(JSON.stringify(new Date(end_date.setDate(end_date.getDate() + 1))))
+      }
+      new_dict[String(days_ending_a_week().length-2)].push(end_date)
+
+    var count = 0
+    var array_offset = 0
+    var day_range = 7
+
+    function show_next_week(){
+        count ++;
+        if(count >=1){
+          document.getElementById("previous_button").disabled = false;
+        }
+        var headers = document.querySelector('#time-slot-table thead tr:first-child')
+        var htmlTemplate = `<th ${scope="col"}>Slot</th>`
+        for (var i=0; i <= Object.keys(new_dict).length; i++){
+          htmlTemplate += `<th ${scope="col"}>${get_english_day(new_dict[count][i].split("T")[0])}(${String(new Date(new_dict[count][i].split("T")[0]).getDate()).padStart(2, "0")}/${String(new Date(new_dict[count][i]).getMonth() + 1).padStart(2, '0')})</th>`;
+        }
+        headers.innerHTML = htmlTemplate;
+        if (count == Object.keys(new_dict).length -1){
+           document.getElementById("next_button").disabled = true;
+        }
+
+      var table = document.getElementById("time-slot-table")
+      var table_selector = document.querySelector('table')
+      array_offset += 7
+      var tds = table_selector.querySelectorAll('.editable')
+      var td_data = ''
+
+      for (var i=0; i <=6; i++){
+          td_data += '<td class="editable></td>'
+      }
+      tds.outerHTML = td_data
+
+      var array = JSON.parse('{{ array }}')
+      var arr_portion = array.slice(array_offset, array_offset + day_range)
+
+      for(let i = 0; i < arr_portion.length; i++) {
+        for(let j = 0; j < arr_portion[i].length; j++) {
+            if (arr_portion[i][j] == true){
+              table.rows[j+1].cells[i+1].innerHTML='X'
+            }
+            else{
+              table.rows[j+1].cells[i+1].innerHTML = ""
+            }
+          }
+        }
+      }
+
+    function show_previous_week(){
+      // we must use the code for the 2D array in here and pass count(seems it might not be possible since timeslots < count)
+
+        count --;
+        if(count <= 0){
+           document.getElementById("previous_button").disabled = true;
+           document.getElementById("next_button").disabled = false;
+        }
+        var headers = document.querySelector('#time-slot-table thead tr:first-child')
+        var htmlTemplate = `<th ${scope="col"}>Slot</th>`
+        for (var i=0; i <=Object.keys(new_dict).length;  i++){
+          htmlTemplate += `<th ${scope="col"}>${get_english_day(new_dict[count][i].split("T")[0])}(${String(new Date(new_dict[count][i].split("T")[0]).getDate()).padStart(2, "0")}/${String(new Date(new_dict[count][i]).getMonth() + 1).padStart(2, '0')})</th>`;
+        }
+        headers.innerHTML = htmlTemplate;
+        if(count >=1){
+          document.getElementById("next_button").disabled = false;
+        }
+
+        var table = document.getElementById("time-slot-table")
+        var table_selector = document.querySelector('table')
+        array_offset -= 7
+        var tds = table_selector.querySelectorAll('.editable')
+        var td_data = ''
+
+        for (var i=0; i <=6; i++){
+            td_data += '<td class="editable></td>'
+        }
+        tds.outerHTML = td_data
+
+        var array = JSON.parse('{{ array }}')
+
+        var arr_portion = array.slice(array_offset, array_offset + day_range)
+
+        for(let i = 0; i < arr_portion.length; i++) {
+          for(let j = 0; j < arr_portion[i].length; j++) {
+              if (arr_portion[i][j] == true){
+                table.rows[j+1].cells[i+1].innerHTML='X'
+              }
+              else {
+                table.rows[j+1].cells[i+1].innerHTML = ""
+              }
+            }
+          }
+    }
+
+    var arr = []
+    $(document).ready(function(){
+      $('td').on("input", function(){
+        let $cell = $(this);
+        let cell_text = $cell.text();
+        let slot_time= $cell.closest('tr').find('.time').text();
+        let cell_header = $cell.closest('table').find('th').eq($cell.index()).text();
+        var edit_button = document.getElementById("table-edit")
+        arr.push({"slot_time": slot_time, "date": cell_header})
+      })
+
+      $("#table-edit").on('click', function(){
+        var currentTD = document.getElementsByClassName("editable")
+        if ($(this).html() == 'Edit') {
+          $.each(currentTD, function () {
+            $(this).prop('contenteditable', true)
+          });
+        }
+        else {
+          $.each(currentTD, function () {
+            $(this).prop('contenteditable', false)
+          });
+        }
+        if ($(this).html() == 'Save'){
+          sendToServer(arr)
+        }
+        $(this).html($(this).html() == 'Edit' ? 'Save' : 'Edit')
+      })
+    })
+
+     function sendToServer(arr){
+      converted_arr = JSON.stringify(arr)
+      $.ajax({
+        url: "/save_to_table",
+        type: "POST",
+        data: {arr: converted_arr,
+               csrfmiddlewaretoken: "{{ csrf_token }}"
+              }
+            })
+            .done(function(response){
+              console.log(response)
+            })
+            .fail(function(){
+              console.log("Error Occurred")
+            })
+    }
+</script>
+{% endblock %}
+<div id="schedule" class="row">
+  <div class="col-sm-10">
+     <h2>Schedule</h2>
+  </div>
+  <div class="col-sm-2">
+    <button class="btn btn-primary heading-btn" id="table-edit">Edit</button>
+  </div>
+</div>
+{% if timeslots %}
+ <div>
+  <table id="time-slot-table" class="table table-striped table-bordered">
+    <thead class="table-dark">
+    <tr>
+      <th scope="col">Slot</th>
+      <script>
+        const headers = document.querySelector('#time-slot-table thead tr:first-child')
+        var htmlTemplate = `<th ${scope="col"}> Slot </th>`;
+        for (var i=0; i <=6; i ++){
+          htmlTemplate += `
+          <th ${scope="col"}>${get_english_day(new_dict[0][i].split("T")[0])} (${String(new Date(new_dict[0][i].split("T")[0]).getDate()).padStart(2, '0')}/${String(new Date(new_dict[0][i]).getMonth() + 1).padStart(2, '0')})</th>`
+        }
+        headers.innerHTML = htmlTemplate;
+      </script>
+    </tr>
+  </thead>
+    {% for time in timeslots %}
+    <tr id="time_slots">
+      <td class="time">{{time}}</td>
+      <td class="editable"></td>
+      <td class="editable"></td>
+      <td class="editable"></td>
+      <td class="editable"></td>
+      <td class="editable"></td>
+      <td class="editable"></td>
+      <td class="editable"></td>
+    </tr>
+    {%endfor %}
+  </table>
+</div>
+
+<script>
+    var table = document.getElementById("time-slot-table")
+    var table_selector = document.querySelector('table')
+    var tds = table_selector.querySelectorAll('.editable')
+    var td_data = ''
+    for (var i=0; i <=6; i++){
+      td_data += '<td class="editable"></td>'
+    }
+    tds.outerHTML = td_data
+    var array = JSON.parse('{{ array }}')
+
+    var initial_array = array.slice(0, 7)
+
+      for(let i = 0; i < initial_array.length; i++) {
+        for(let j = 0; j < initial_array[i].length; j++) {
+            if (initial_array[i][j] == true){
+            table.rows[j+1].cells[i+1].innerHTML='X'
+          }
+          else{
+            table.rows[j+1].cells[i+1].innerHTML = ""
+          }
+      }
+    }
+</script>
+{% endif %}
+<div class="col-sm-2" id="pagination_arrows">
+  <button class="w3-button" onclick="show_previous_week()" id="previous_button">&laquo;</button>
+  <button class="w3-button" onclick="show_next_week()" id="next_button">&raquo;</button>
+</div>
 {% endblock %}
