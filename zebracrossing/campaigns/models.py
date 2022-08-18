@@ -5,8 +5,9 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+
 class TimeSlot(models.Model):
-    time = models.TimeField(_('Time'))
+    time = models.TimeField(_("Time"))
 
     def __str__(self):
         return self.time.strftime("%H:%M")
@@ -30,47 +31,60 @@ class BookingSheet(models.Model):
         return f"campaigns/{instance.campaign.id}/bookings/{filename}"
 
     AD_TYPES = (
-        ('SM', 'Social Media'),
-        ('REC', 'Recorded'),
-        ('LR', 'Live Read'),
-        ('COMP', 'Competition')
+        ("SM", "Social Media"),
+        ("REC", "Recorded"),
+        ("LR", "Live Read"),
+        ("COMP", "Competition"),
     )
-    ad_type = models.CharField(_('type'), max_length=100, choices=AD_TYPES)
-    start_date = models.DateField(_('start date'))
-    end_date = models.DateField(_('end date'))
-    campaign = models.ForeignKey('Campaign', on_delete=models.CASCADE, related_name='booking_sheets')
+    ad_type = models.CharField(_("type"), max_length=100, choices=AD_TYPES)
+    start_date = models.DateField(_("start date"))
+    end_date = models.DateField(_("end date"))
+    campaign = models.ForeignKey(
+        "Campaign", on_delete=models.CASCADE, related_name="booking_sheets"
+    )
     booking_sheet = models.FileField(upload_to=upload_to_campaign)
     cost = models.IntegerField()
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude=exclude)
         if self.start_date > self.end_date:
-            if exclude and 'start_date' in exclude:
+            if exclude and "start_date" in exclude:
                 raise ValidationError(_("Start date is after end date"))
             else:
-                raise ValidationError({'start_date': _("Start date is after end date")})
+                raise ValidationError({"start_date": _("Start date is after end date")})
         if self.campaign is None:
             raise ValidationError(_("Campaign not specified"))
 
     def __str__(self):
-        return self.campaign.client + " (" + \
-                self.campaign.ad_agency + "): " + \
-                self.start_date.strftime("%Y/%m/%d") + " - " + \
-                self.end_date.strftime("%Y/%m/%d") + " (" + self.ad_type + ")"
+        return (
+            self.campaign.client
+            + " ("
+            + self.campaign.ad_agency
+            + "): "
+            + self.start_date.strftime("%Y/%m/%d")
+            + " - "
+            + self.end_date.strftime("%Y/%m/%d")
+            + " ("
+            + self.ad_type
+            + ")"
+        )
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            result = self.ad_type == other.ad_type and \
-                    self.start_date == other.start_date and \
-                    self.end_date == other.end_date and \
-                    self.campaign == other.campaign and \
-                    self.cost == other.cost
+            result = (
+                self.ad_type == other.ad_type
+                and self.start_date == other.start_date
+                and self.end_date == other.end_date
+                and self.campaign == other.campaign
+                and self.cost == other.cost
+            )
             return result
         return False
 
+
 class Campaign(models.Model):
     client = models.CharField(max_length=200)
-    ad_agency = models.CharField(_('advertising agency'), max_length=200)
+    ad_agency = models.CharField(_("advertising agency"), max_length=200)
 
     def __str__(self):
         return self.client + " from " + self.ad_agency
@@ -78,7 +92,7 @@ class Campaign(models.Model):
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return self.client == other.client and self.ad_agency == other.ad_agency
-        return False;
+        return False
 
     @property
     def start_date(self):
@@ -117,13 +131,16 @@ class Campaign(models.Model):
             return False
         return start_date <= today and end_date >= today
 
+
 class Material(models.Model):
     def upload_to_campaign(instance, filename):
         return f"campaigns/{instance.campaign.id}/material/{filename}"
 
-    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='material')
+    campaign = models.ForeignKey(
+        Campaign, on_delete=models.CASCADE, related_name="material"
+    )
     material = models.FileField(upload_to=upload_to_campaign)
 
     def __str__(self):
         p = Path(self.material.name)
-        return f'{p.name}'
+        return f"{p.name}"

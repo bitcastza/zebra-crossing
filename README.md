@@ -7,7 +7,9 @@ Traffic management application for the radio industry.
 Zebra Crossing is built using Django. A development environment can be set up using:
 
 ```
+$ sudo apt install pre-commit
 $ virtualenv -p python3 pyenv
+$ pre-commit install
 $ pyenv/bin/pip install -r requirements.txt
 $ yarn install
 $ pyenv/bin/python manage.py migrate

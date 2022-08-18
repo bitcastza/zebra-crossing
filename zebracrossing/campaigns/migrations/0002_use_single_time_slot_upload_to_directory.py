@@ -8,27 +8,31 @@ import zebracrossing.campaigns.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('campaigns', '0001_initial'),
+        ("campaigns", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='timeslot',
-            name='end_time',
+            model_name="timeslot",
+            name="end_time",
         ),
         migrations.RemoveField(
-            model_name='timeslot',
-            name='start_time',
+            model_name="timeslot",
+            name="start_time",
         ),
         migrations.AddField(
-            model_name='timeslot',
-            name='time',
-            field=models.TimeField(default=django.utils.timezone.now, verbose_name='Time'),
+            model_name="timeslot",
+            name="time",
+            field=models.TimeField(
+                default=django.utils.timezone.now, verbose_name="Time"
+            ),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='bookingsheet',
-            name='material',
-            field=models.FileField(upload_to=zebracrossing.campaigns.models.BookingSheet.upload_to_campaign),
+            model_name="bookingsheet",
+            name="material",
+            field=models.FileField(
+                upload_to=zebracrossing.campaigns.models.BookingSheet.upload_to_campaign
+            ),
         ),
     ]

@@ -2,7 +2,7 @@ from django.urls import path
 
 from . import views
 
-app_name = 'campaigns'
+app_name = "campaigns"
 urlpatterns = [
     path('', views.index, name='index'),
     path('save_to_table', views.save_to_table, name='save_to_table'),
