@@ -8,56 +8,112 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='BookingSheet',
+            name="BookingSheet",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('material', models.FileField(upload_to='')),
-                ('ad_type', models.CharField(choices=[('SM', 'Social Media'), ('REC', 'Recorded'), ('LR', 'Live Read'), ('COMP', 'Competition')], max_length=100, verbose_name='type')),
-                ('start_date', models.DateField(verbose_name='start date')),
-                ('end_date', models.DateField(verbose_name='end date')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("material", models.FileField(upload_to="")),
+                (
+                    "ad_type",
+                    models.CharField(
+                        choices=[
+                            ("SM", "Social Media"),
+                            ("REC", "Recorded"),
+                            ("LR", "Live Read"),
+                            ("COMP", "Competition"),
+                        ],
+                        max_length=100,
+                        verbose_name="type",
+                    ),
+                ),
+                ("start_date", models.DateField(verbose_name="start date")),
+                ("end_date", models.DateField(verbose_name="end date")),
             ],
         ),
         migrations.CreateModel(
-            name='Campaign',
+            name="Campaign",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('client', models.CharField(max_length=200)),
-                ('ad_agency', models.CharField(max_length=200, verbose_name='advertising agency')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("client", models.CharField(max_length=200)),
+                (
+                    "ad_agency",
+                    models.CharField(max_length=200, verbose_name="advertising agency"),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='CampaignBookingCost',
+            name="CampaignBookingCost",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('cost', models.IntegerField()),
-                ('booking_sheet', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='campaigns.BookingSheet')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("cost", models.IntegerField()),
+                (
+                    "booking_sheet",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="campaigns.BookingSheet",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='TimeSlot',
+            name="TimeSlot",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('start_time', models.TimeField(verbose_name='start time')),
-                ('end_time', models.TimeField(verbose_name='end time')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("start_time", models.TimeField(verbose_name="start time")),
+                ("end_time", models.TimeField(verbose_name="end time")),
             ],
         ),
         migrations.AddField(
-            model_name='campaignbookingcost',
-            name='time_slot',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='campaigns.TimeSlot'),
+            model_name="campaignbookingcost",
+            name="time_slot",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="campaigns.TimeSlot"
+            ),
         ),
         migrations.AddField(
-            model_name='bookingsheet',
-            name='campaign',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='campaigns.Campaign'),
+            model_name="bookingsheet",
+            name="campaign",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="campaigns.Campaign"
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='campaignbookingcost',
-            unique_together={('time_slot', 'booking_sheet')},
+            name="campaignbookingcost",
+            unique_together={("time_slot", "booking_sheet")},
         ),
     ]
