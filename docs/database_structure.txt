@@ -15,4 +15,3 @@ ID  Start       End
 Campaign Booking Costs:
 Time Slot ID    Booking Sheet ID    Cost
 1               1                   200
-

@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
-    path('', include('zebracrossing.campaigns.urls')),
-    path('admin/', admin.site.urls),
-    path('accounts/', include('zebracrossing.registration.urls')),
+    path("", include("zebracrossing.campaigns.urls")),
+    path("admin/", admin.site.urls),
+    path("accounts/", include("zebracrossing.registration.urls")),
 ]

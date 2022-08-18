@@ -6,21 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('campaigns', '0002_use_single_time_slot_upload_to_directory'),
+        ("campaigns", "0002_use_single_time_slot_upload_to_directory"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='campaignbookingcost',
-            name='time_slots',
-            field=models.ManyToManyField(to='campaigns.TimeSlot'),
+            model_name="campaignbookingcost",
+            name="time_slots",
+            field=models.ManyToManyField(to="campaigns.TimeSlot"),
         ),
         migrations.AlterUniqueTogether(
-            name='campaignbookingcost',
+            name="campaignbookingcost",
             unique_together=set(),
         ),
         migrations.RemoveField(
-            model_name='campaignbookingcost',
-            name='time_slot',
+            model_name="campaignbookingcost",
+            name="time_slot",
         ),
     ]

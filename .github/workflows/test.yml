@@ -1,4 +1,4 @@
-name: Python
+name: Test
 
 on:
   push:
@@ -7,7 +7,15 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - uses: pre-commit/action@v3.0.0
+  python:
     runs-on: ubuntu-latest
     strategy:
       matrix:

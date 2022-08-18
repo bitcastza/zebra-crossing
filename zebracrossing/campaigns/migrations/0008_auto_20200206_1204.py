@@ -7,13 +7,17 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('campaigns', '0007_material'),
+        ("campaigns", "0007_material"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='bookingsheet',
-            name='campaign',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='booking_sheets', to='campaigns.Campaign'),
+            model_name="bookingsheet",
+            name="campaign",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="booking_sheets",
+                to="campaigns.Campaign",
+            ),
         ),
     ]
