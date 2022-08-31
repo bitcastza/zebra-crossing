@@ -18,10 +18,16 @@ from django.urls import reverse
 
 from .models import BookingSheet, Campaign, Material, TimeSlot, BookedDay
 from .forms import BookingSheetForm, CampaignForm, MaterialForm
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .serializers import scheduleSerializer
 
 
 class CampaignView(mixins.LoginRequiredMixin, DetailView):
     model = Campaign
+    def schedule_data(self, **kwargs):
+        sheet = BookingSheet.objects.filter(campaign=self.get_object())[0]
+        return sheet
 
     def get_context_data(self, **kwargs):
         sheet = BookingSheet.objects.filter(campaign=self.get_object())[0]
@@ -73,6 +79,14 @@ class CampaignView(mixins.LoginRequiredMixin, DetailView):
 class BookingView(mixins.LoginRequiredMixin, DetailView):
     model = BookingSheet
 
+class scheduleList(APIView):
+    def get(self, request):
+        start_date = request.GET.get("start")
+        end_date = request.GET.get("end")
+        if start_date is not None and end_date is not None:
+            schedule = BookedDay.objects.filter(date__range=[start_date, end_date])
+            serializer = scheduleSerializer(schedule, many=True)
+        return Response(serializer.data)
 
 @login_required
 def index(request):
