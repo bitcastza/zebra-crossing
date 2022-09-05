@@ -205,4 +205,4 @@ def save_to_table(request):
     except TypeError:
         pass
 
-    return JsonResponse({'status':'false'}, status=200)
+    return JsonResponse({'status':'true'}, status=200)

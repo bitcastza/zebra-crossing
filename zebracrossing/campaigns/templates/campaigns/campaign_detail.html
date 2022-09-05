@@ -268,9 +268,6 @@ Cost: R {{ campaign.cost }}<br>
                csrfmiddlewaretoken: "{{ csrf_token }}"
               }
             })
-            .done(function(response){
-              console.log(response)
-            })
             .fail(function(){
               console.log("Error Occurred")
             })
