@@ -122,8 +122,15 @@ Cost: R {{ campaign.cost }}<br>
         }
         var headers = document.querySelector('#time-slot-table thead tr:first-child')
         var htmlTemplate = `<th ${scope="col"}>Slot</th>`
-        for (var i=0; i <= Object.keys(new_dict).length; i++){
+        if (new_dict[count].length == 7){
+          for (var i=0; i <=6; i++){
           htmlTemplate += `<th ${scope="col"}>${get_english_day(new_dict[count][i].split("T")[0])}(${String(new Date(new_dict[count][i].split("T")[0]).getDate()).padStart(2, "0")}/${String(new Date(new_dict[count][i]).getMonth() + 1).padStart(2, '0')})</th>`;
+        }
+      }
+        if(new_dict[count].length !==7){
+          for (var i=0; i < new_dict[count].length-1; i++){
+          htmlTemplate += `<th ${scope="col"}>${get_english_day(new_dict[count][i].split("T")[0])}(${String(new Date(new_dict[count][i].split("T")[0]).getDate()).padStart(2, "0")}/${String(new Date(new_dict[count][i]).getMonth() + 1).padStart(2, '0')})</th>`;
+        }
         }
         headers.innerHTML = htmlTemplate;
         if (count == Object.keys(new_dict).length -1){
@@ -136,8 +143,15 @@ Cost: R {{ campaign.cost }}<br>
       var tds = table_selector.querySelectorAll('.editable')
       var td_data = ''
 
-      for (var i=0; i <=6; i++){
+      if (new_dict[count] == 7){
+        for (var i=0; i <=6; i++){
           td_data += '<td class="editable></td>'
+      }
+      }
+      if (new_dict[count].length !==7) {
+        for (var i=0; i < new_dict[count].length - 1; i++){
+          td_data += '<td class="editable></td>'
+        }
       }
       tds.outerHTML = td_data
 
@@ -166,9 +180,17 @@ Cost: R {{ campaign.cost }}<br>
         }
         var headers = document.querySelector('#time-slot-table thead tr:first-child')
         var htmlTemplate = `<th ${scope="col"}>Slot</th>`
-        for (var i=0; i <=Object.keys(new_dict).length;  i++){
+        if (new_dict[count].length == 7){
+          for (var i=0; i <= 6;  i++){
           htmlTemplate += `<th ${scope="col"}>${get_english_day(new_dict[count][i].split("T")[0])}(${String(new Date(new_dict[count][i].split("T")[0]).getDate()).padStart(2, "0")}/${String(new Date(new_dict[count][i]).getMonth() + 1).padStart(2, '0')})</th>`;
         }
+        }
+        if(new_dict[count].length !==7){
+          for (var i=0; i < new_dict[count].length-1;  i++){
+          htmlTemplate += `<th ${scope="col"}>${get_english_day(new_dict[count][i].split("T")[0])}(${String(new Date(new_dict[count][i].split("T")[0]).getDate()).padStart(2, "0")}/${String(new Date(new_dict[count][i]).getMonth() + 1).padStart(2, '0')})</th>`;
+        }
+        }
+
         headers.innerHTML = htmlTemplate;
         if(count >=1){
           document.getElementById("next_button").disabled = false;
@@ -179,9 +201,15 @@ Cost: R {{ campaign.cost }}<br>
         array_offset -= 7
         var tds = table_selector.querySelectorAll('.editable')
         var td_data = ''
-
-        for (var i=0; i <=6; i++){
+        if ( new_dict[count].length == 7){
+          for (var i=0; i <=6; i++){
             td_data += '<td class="editable></td>'
+        }
+        }
+        if (new_dict[count].length !== 7){
+          for (var i=0; i < new_dict[count].length-1; i++){
+            td_data += '<td class="editable></td>'
+        }
         }
         tds.outerHTML = td_data
 
@@ -209,7 +237,7 @@ Cost: R {{ campaign.cost }}<br>
         let slot_time= $cell.closest('tr').find('.time').text();
         let cell_header = $cell.closest('table').find('th').eq($cell.index()).text();
         var edit_button = document.getElementById("table-edit")
-        arr.push({"slot_time": slot_time, "date": cell_header})
+        arr.push({"slot_time": slot_time, "date": cell_header, bookingsheet_id: "{{ bookingsheet.id }}"})
       })
 
       $("#table-edit").on('click', function(){
@@ -266,9 +294,15 @@ Cost: R {{ campaign.cost }}<br>
       <script>
         const headers = document.querySelector('#time-slot-table thead tr:first-child')
         var htmlTemplate = `<th ${scope="col"}> Slot </th>`;
-        for (var i=0; i <=6; i ++){
+        if (new_dict[0].length == 7){
+          for (var i=0; i <=6; i ++){
           htmlTemplate += `
           <th ${scope="col"}>${get_english_day(new_dict[0][i].split("T")[0])} (${String(new Date(new_dict[0][i].split("T")[0]).getDate()).padStart(2, '0')}/${String(new Date(new_dict[0][i]).getMonth() + 1).padStart(2, '0')})</th>`
+        }
+        if (new_dict[0].length !== 7){
+          htmlTemplate += `
+          <th ${scope="col"}>${get_english_day(new_dict[0][i].split("T")[0])} (${String(new Date(new_dict[0][i].split("T")[0]).getDate()).padStart(2, '0')}/${String(new Date(new_dict[0][i]).getMonth() + 1).padStart(2, '0')})</th>`
+        }
         }
         headers.innerHTML = htmlTemplate;
       </script>
@@ -315,7 +349,7 @@ Cost: R {{ campaign.cost }}<br>
 </script>
 {% endif %}
 <div class="col-sm-2" id="pagination_arrows">
-  <button class="w3-button" onclick="show_previous_week()" id="previous_button">&laquo;</button>
-  <button class="w3-button" onclick="show_next_week()" id="next_button">&raquo;</button>
+  <button class="btn btn-primary" onclick="show_previous_week()" id="previous_button" style="font-size: 22px;">&laquo;</button>
+  <button class="btn btn-primary" onclick="show_next_week()" id="next_button" style="font-size: 22px;">&raquo;</button>
 </div>
 {% endblock %}

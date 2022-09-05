@@ -50,6 +50,7 @@ class SaveToTableTest(TestCase):
     
     def test_save_to_table(self):
         try:
+            # use post method here and give it data
             response = self.client.get(self.save_to_table_url)
         except json.decoder.JSONDecodeError:
             pass
