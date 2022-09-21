@@ -20,7 +20,6 @@ from .models import BookingSheet, Campaign, Material, TimeSlot, BookedDay
 from .forms import BookingSheetForm, CampaignForm, MaterialForm
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import scheduleSerializer
 
 
 class CampaignView(mixins.LoginRequiredMixin, DetailView):
@@ -79,14 +78,27 @@ class CampaignView(mixins.LoginRequiredMixin, DetailView):
 class BookingView(mixins.LoginRequiredMixin, DetailView):
     model = BookingSheet
 
-class scheduleList(APIView):
+class scheduleList(APIView):        
     def get(self, request):
         start_date = request.GET.get("start")
         end_date = request.GET.get("end")
+        my_dict = {}
+        my_array = []
         if start_date is not None and end_date is not None:
             schedule = BookedDay.objects.filter(date__range=[start_date, end_date])
-            serializer = scheduleSerializer(schedule, many=True)
-        return Response(serializer.data)
+            for item in schedule:
+                if item.bookingsheet.campaign.client not in my_dict:
+                    my_dict = {
+                        "campaign" : item.bookingsheet.campaign.client,
+                        "material": {
+                            "download_url": "http://localhost:8000/{}/".format(item.bookingsheet.campaign.id) 
+                                                                      + str(Material.objects.get(campaign_id=item.bookingsheet.campaign.id)),
+                            "type": item.bookingsheet.ad_type
+                        },
+                        "scheduled": "{}:{}".format(item.date, item.timeslot)
+                    }
+                    my_array.append(my_dict)
+        return Response(my_array)
 
 @login_required
 def index(request):
