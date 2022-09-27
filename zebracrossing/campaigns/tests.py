@@ -115,7 +115,7 @@ class APIEndpointTests(TestCase):
         self.url = f"http://localhost:8000/api/v1/schedule/?start={self.start_date}&end={self.end_date}"
 
         campaign = Campaign.objects.create(
-            client="test client", ad_agency="test agency"
+            client="Telkom", ad_agency="Telkom agency"
         )
         self.fp = open("README.md")
         self.booking_sheet = BookingSheet(
@@ -143,6 +143,7 @@ class APIEndpointTests(TestCase):
         self.client.login(username="test", password="test")
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
+        self.assertCountEqual(response.json(), self.schedule_list)
 
 
 class BookingSheetTests(TestCase):
