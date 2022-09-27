@@ -114,9 +114,7 @@ class APIEndpointTests(TestCase):
         ]
         self.url = f"http://localhost:8000/api/v1/schedule/?start={self.start_date}&end={self.end_date}"
 
-        campaign = Campaign.objects.create(
-            client="Telkom", ad_agency="Telkom agency"
-        )
+        campaign = Campaign.objects.create(client="Telkom", ad_agency="Telkom agency")
         self.fp = open("README.md")
         self.booking_sheet = BookingSheet(
             ad_type="REC",
