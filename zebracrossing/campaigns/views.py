@@ -175,7 +175,6 @@ def download_item(request, item):
 
 
 def save_to_table(request):
-    # check if request is a POST, if not return 405, if it is, contine with function
     if request.method != "POST":
         return HttpResponseNotAllowed(["GET"])
 
