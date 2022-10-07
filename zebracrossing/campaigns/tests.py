@@ -7,9 +7,6 @@ from django.urls import reverse
 
 from .models import BookingSheet, Campaign, TimeSlot, BookedDay
 from .forms import BookingSheetForm
-from django.test.client import RequestFactory
-from .views import save_to_table
-import json
 
 
 class TimeSlotTests(TestCase):
@@ -30,14 +27,14 @@ class SaveToTableTest(TestCase):
         self.client = Client()
         self.save_to_table_url = reverse("campaigns:save_to_table")
         self.fp = open("README.md")
-        campaign = Campaign.objects.create(
-            client="test client", ad_agency="test agency"
+        self.campaign = Campaign.objects.create(
+            client="Telkom", ad_agency="Telkom agency"
         )
         self.booking_sheet = BookingSheet(
             ad_type="REC",
             start_date=datetime.date(year=2022, month=6, day=20),
             end_date=datetime.date(year=2022, month=7, day=31),
-            campaign=campaign,
+            campaign=self.campaign,
             booking_sheet=File(self.fp),
             cost=23000,
         )
@@ -47,7 +44,7 @@ class SaveToTableTest(TestCase):
         self.time_slot.save()
 
         self.booked_day = BookedDay.objects.create(
-            date=datetime.date(2022, 6, 25),
+            date=datetime.date(2022, 6, 22),
             timeslot=self.time_slot,
             bookingsheet=self.booking_sheet,
         )
@@ -56,15 +53,23 @@ class SaveToTableTest(TestCase):
     def test_save_to_table(self):
         dict_expected = {
             "slot_time": "12:53",
-            "date": "Saturday (25/06)",
+            "date": "Saturday (22/06)",
             "bookingsheet_id": f"{self.booking_sheet.id}",
         }
         response = self.client.post(self.save_to_table_url, dict_expected, follow=True)
 
-        self.assertEqual(str(self.booked_day.timeslot), "12:53")
-        self.assertEqual(str(self.booked_day.date), "2022-06-25")
-        self.assertEqual(self.booked_day.bookingsheet.cost, 23000)
-        self.assertAlmostEqual(response.status_code, 200)
+        self.assertEqual(
+            BookingSheet.objects.get(start_date=self.booking_sheet.start_date),
+            self.booking_sheet,
+        )
+        self.assertEqual(TimeSlot.objects.get(time=self.time_slot.time), self.time_slot)
+        self.assertEqual(
+            Campaign.objects.get(client=self.campaign.client), self.campaign
+        )
+        self.assertEqual(
+            BookedDay.objects.get(date=self.booked_day.date), self.booked_day
+        )
+        self.assertEqual(response.status_code, 200)
 
     @classmethod
     def tearDownClass(self):
