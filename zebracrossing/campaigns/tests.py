@@ -7,6 +7,7 @@ from django.urls import reverse
 
 from .models import BookingSheet, Campaign, TimeSlot, BookedDay
 from .forms import BookingSheetForm
+import json
 
 
 class TimeSlotTests(TestCase):
@@ -51,12 +52,14 @@ class SaveToTableTest(TestCase):
         self.booked_day.save()
 
     def test_save_to_table(self):
-        dict_expected = {
-            "slot_time": "12:53",
-            "date": "Saturday (22/06)",
-            "bookingsheet_id": f"{self.booking_sheet.id}",
-        }
-        response = self.client.post(self.save_to_table_url, dict_expected, follow=True)
+        ajax_data_expected = [
+            {"slot_time": "12:00", "date": "Tuesday (06/09)", "bookingsheet_id": "1"}
+        ]
+        response = self.client.post(
+            self.save_to_table_url,
+            json.loads(json.dumps(ajax_data_expected)),
+            content_type="application/json",
+        )
 
         self.assertEqual(
             BookingSheet.objects.get(start_date=self.booking_sheet.start_date),

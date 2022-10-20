@@ -12,7 +12,7 @@ from django.urls import reverse
 
 from .models import BookingSheet, Campaign, Material, TimeSlot, BookedDay
 from .forms import BookingSheetForm, CampaignForm, MaterialForm
-from django.http import JsonResponse
+from django.core import serializers
 import json
 
 
@@ -62,7 +62,7 @@ class CampaignView(mixins.LoginRequiredMixin, DetailView):
             booked_view.append(booked_day)
 
         context = super().get_context_data(**kwargs)
-        context["timeslots"] = TimeSlot.objects.all()
+        context["timeslots"] = serializers.serialize("json", TimeSlot.objects.all())
         context["booked_day"] = BookedDay.objects.all()
         context["array"] = json.dumps(booked_view)
         # add this below and return the bookinghsheet id from the javascript side
@@ -174,37 +174,37 @@ def download_item(request, item):
     return response
 
 
+def create_date_from_table_header(date):
+    result = date[str(date).find("(") + 1 : str(date).find(")")]
+    day = result.split("/")[0]
+    month = result.split("/")[1]
+    year = str(datetime.today().year)
+    date_object = datetime.strptime(f"{year}-{month}-{day}", "%Y-%m-%d").date()
+    return date_object
+
+
 def save_to_table(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(["GET"])
 
-    date = None
-    time = None
     bookingsheet_id = None
+    time = None
 
-    if len(request.POST.getlist("arr")) != 0:
-        for data in request.POST.getlist("arr"):
-            for info in json.loads(data):
-                date = info["date"]
-                time = info["slot_time"]
-                bookingsheet_id = info["bookingsheet_id"]
+    if bool(request.POST.get("arr")) == True:
+        try:
+            for data in json.loads(request.POST.get("arr")):
+                time = TimeSlot.objects.raw(
+                    "SELECT * FROM campaigns_timeslot where time=%s",
+                    [data["slot_time"]],
+                )[0]
+                bookingsheet_id = data["bookingsheet_id"]
+                booking = BookedDay(
+                    date=create_date_from_table_header(data["date"]),
+                    timeslot=time,
+                    bookingsheet=BookingSheet.objects.get(id=bookingsheet_id),
+                )
 
-    try:
-        result = date[str(date).find("(") + 1 : str(date).find(")")]
-        day = result.split("/")[0]
-        month = result.split("/")[1]
-        year = str(datetime.today().year)
-
-        date_object = datetime.strptime(f"{year}-{month}-{day}", "%Y-%m-%d").date()
-        booking_sheet = BookingSheet.objects.get(id=bookingsheet_id)
-        timeslot = TimeSlot.objects.raw(
-            "SELECT * FROM campaigns_timeslot where time=%s", [time]
-        )[0]
-        booking = BookedDay(
-            date=date_object, timeslot=timeslot, bookingsheet=booking_sheet
-        )
-        booking.save()
-    except TypeError:
-        pass
-
+                booking.save()
+        except TypeError:
+            pass
     return HttpResponse(status=200)
