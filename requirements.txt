@@ -1,3 +1,4 @@
 django
 django-bootstrap5
+django-http-exceptions
 fontawesomefree==6.2.0

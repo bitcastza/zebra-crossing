@@ -1,4 +1,5 @@
 from datetime import datetime, date, timedelta
+from django_http_exceptions import HTTPExceptions
 import mimetypes
 
 from django.contrib.auth.decorators import login_required
@@ -182,29 +183,27 @@ def create_date_from_table_header(date):
     date_object = datetime.strptime(f"{year}-{month}-{day}", "%Y-%m-%d").date()
     return date_object
 
-
-def save_to_table(request):
+@login_required
+def save_schedule(request, pk):
     if request.method != "POST":
-        return HttpResponseNotAllowed(["GET"])
+        return HttpResponseNotAllowed(["POST"])
 
-    bookingsheet_id = None
     time = None
 
-    if bool(request.POST.get("arr")) == True:
-        try:
-            for data in json.loads(request.POST.get("arr")):
-                time = TimeSlot.objects.raw(
-                    "SELECT * FROM campaigns_timeslot where time=%s",
-                    [data["slot_time"]],
-                )[0]
-                bookingsheet_id = data["bookingsheet_id"]
-                booking = BookedDay(
-                    date=create_date_from_table_header(data["date"]),
-                    timeslot=time,
-                    bookingsheet=BookingSheet.objects.get(id=bookingsheet_id),
-                )
+    if bool(request.POST.get("schedule")) == True:
+        for data in json.loads(request.POST.get("schedule")):
+            time = TimeSlot.objects.raw(
+                "SELECT * FROM campaigns_timeslot where time=%s",
+                [data["slot_time"]],
+            )[0]
+            pk = data["bookingsheet_id"]
+            booking = BookedDay(
+                date=create_date_from_table_header(data["date"]),
+                timeslot=time,
+                bookingsheet=BookingSheet.objects.get(id=pk),
+            )
 
-                booking.save()
-        except TypeError:
-            pass
+            booking.save()
+    else:
+        raise HTTPExceptions.NO_CONTENT("No data passed to be processed and saved.")
     return HttpResponse(status=200)

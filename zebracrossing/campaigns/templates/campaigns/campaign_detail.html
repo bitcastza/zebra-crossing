@@ -6,7 +6,13 @@ Client: {{ campaign.client }}<br>
 Ad Agency: {{ campaign.ad_agency }}<br>
 Cost: R {{ campaign.cost }}<br>
 </p>
-
+{% block disable_arrow %}
+<script>
+  $(document).ready(function disable_arrow(){
+    document.getElementById("previous_button").disabled = true;
+  })
+</script>
+{% endblock %}
 <div id="booking_sheets" class="row">
   <div class="col-sm-10">
     <h2>Booking Sheets</h2>
@@ -85,6 +91,9 @@ Cost: R {{ campaign.cost }}<br>
       }
 
       function group_days_between_start_and_end_date(start_date, end_date){
+        if(!start_date || !end_date){
+           alert("Please create a bookingsheet in the database");
+        }
         var start_week_day = []
         var count = 0
         for (let i = 0; i < getDatesInRange(start_date, end_date).length; i++){
@@ -277,7 +286,7 @@ Cost: R {{ campaign.cost }}<br>
             }
           }
       }
-    var arr = []
+    var schedule = []
     $(document).ready(function(){
       $('td').on("input", function(){
         let $cell = $(this);
@@ -285,7 +294,7 @@ Cost: R {{ campaign.cost }}<br>
         let slot_time= $cell.closest('tr').find('.time').text();
         let cell_header = $cell.closest('table').find('th').eq($cell.index()).text();
         var edit_button = document.getElementById("table-edit")
-        arr.push({"slot_time": slot_time, "date": cell_header, bookingsheet_id: "{{ bookingsheet.id }}"})
+        schedule.push({"slot_time": slot_time, "date": cell_header, bookingsheet_id: "{{ bookingsheet.id }}"})
       })
 
       $("#table-edit").on('click', function(){
@@ -301,18 +310,18 @@ Cost: R {{ campaign.cost }}<br>
           });
         }
         if ($(this).html() == 'Save'){
-          sendToServer(arr)
+          sendToServer(schedule)
         }
         $(this).html($(this).html() == 'Edit' ? 'Save' : 'Edit')
       })
     })
 
-     function sendToServer(arr){
-      converted_arr = JSON.stringify(arr)
+     function sendToServer(schedule){
+      converted_arr = JSON.stringify(schedule)
       $.ajax({
-        url: "/save_to_table",
+        url: "schedule/save",
         type: "POST",
-        data: {arr: converted_arr,
+        data: {schedule: converted_arr,
                csrfmiddlewaretoken: "{{ csrf_token }}"
               }
             })

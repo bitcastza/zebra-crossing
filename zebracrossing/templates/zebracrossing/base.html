@@ -10,16 +10,12 @@
     {% bootstrap_css %}
     <link href="{% static 'css/zebracrossing.css' %}" rel="stylesheet" media="screen">
     <link rel="stylesheet" href="{% static 'fontawesomefree/css/all.min.css' %}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="{% static 'vendor/jquery/dist/jquery.min.js' %}"></script>
     {% bootstrap_javascript %}
     {% block extra_head %}{% endblock %}
   </head>
-  <script>
-    function disable_arrow(){
-      document.getElementById("previous_button").disabled = true;
-    }
-  </script>
-  <body onload="disable_arrow();">
+  {% block disable_arrow %}{%endblock %}
+  <body>
     {% include "zebracrossing/nav.html" %}
     <div id="main" class="container {% block container_class %}{% endblock %}">
       {% block pre_content %} {% endblock %}

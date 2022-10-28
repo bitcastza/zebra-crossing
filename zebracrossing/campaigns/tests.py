@@ -49,15 +49,14 @@ class SaveToTableTest(TestCase):
             timeslot=self.time_slot,
             bookingsheet=self.booking_sheet,
         )
-        self.booked_day.save()
 
     def test_save_to_table(self):
         ajax_data_expected = [
-            {"slot_time": "12:00", "date": "Tuesday (06/09)", "bookingsheet_id": "1"}
+            {"slot_time": "12:53", "date": "Wednesday (22/06)", "bookingsheet_id": "1"}
         ]
         response = self.client.post(
             self.save_to_table_url,
-            json.loads(json.dumps(ajax_data_expected)),
+            ajax_data_expected,
             content_type="application/json",
         )
 
