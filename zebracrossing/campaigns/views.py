@@ -90,15 +90,14 @@ class scheduleList(mixins.LoginRequiredMixin, APIView):
                 "Please check that your start and end date are valid and present",
                 status=400,
             )
-        else:
-            schedule = BookedDay.objects.filter(date__range=[start_date, end_date])
-            for item in schedule:
-                schedule_item = {
-                    "campaign": item.bookingsheet.campaign.client,
-                    "material": {"download_url": "", "type": item.bookingsheet.ad_type},
-                    "scheduled": f"{item.date}:{item.timeslot}",
-                }
-                schedule_list.append(schedule_item)
+        schedule = BookedDay.objects.filter(date__range=[start_date, end_date])
+        for item in schedule:
+            schedule_item = {
+                "campaign": item.bookingsheet.campaign.client,
+                "material": {"download_url": "", "type": item.bookingsheet.ad_type},
+                "scheduled": f"{item.date}:{item.timeslot}",
+            }
+            schedule_list.append(schedule_item)
         return Response(schedule_list)
 
 
