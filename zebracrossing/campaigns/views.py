@@ -66,7 +66,6 @@ class CampaignView(mixins.LoginRequiredMixin, DetailView):
         context["timeslots"] = serializers.serialize("json", TimeSlot.objects.all())
         context["booked_day"] = BookedDay.objects.all()
         context["array"] = json.dumps(booked_view)
-        # add this below and return the bookinghsheet id from the javascript side
         context["bookingsheet"] = sheet
         return context
 
@@ -182,6 +181,7 @@ def create_date_from_table_header(date):
     year = str(datetime.today().year)
     date_object = datetime.strptime(f"{year}-{month}-{day}", "%Y-%m-%d").date()
     return date_object
+
 
 @login_required
 def save_schedule(request, pk):
