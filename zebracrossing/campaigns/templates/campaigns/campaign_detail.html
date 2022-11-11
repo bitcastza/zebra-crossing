@@ -51,13 +51,8 @@ Cost: R {{ campaign.cost }}<br>
 <script>
       function get_english_day(dateString){
         var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        var d = new Date(dateString);
-        var dayName = days[d.getDay()];
+        var dayName = days[new Date(dateString).getDay()];
         return dayName
-      }
-
-      function end_of_week(year, month, day){
-        return new Date(year, month, day).getDay() == 1
       }
 
       function days_between_dates(start_date, end_date){
@@ -105,36 +100,9 @@ Cost: R {{ campaign.cost }}<br>
         start_week_day.push(new Date(end_date).toISOString())
         return start_week_day
       }
-      function formatDate(date) {
-        var d = new Date(date),
-            month = '' + (d.getMonth() + 1),
-            day = '' + d.getDate(),
-            year = d.getFullYear();
 
-        if (month.length < 2)
-            month = '0' + month;
-        if (day.length < 2)
-            day = '0' + day;
-
-        return [year, month, day].join('-');
-    }
-
-      function dates_and_days(){
-        my_dict = {}
-        var start_date = new Date("{{ campaign.start_date }}")
-        var end_date = new Date("{{ campaign.end_date }}")
-        my_dict[start_date] = get_english_day(start_date)
-        var difference = Math.abs(end_date - start_date)
-        var days = difference/(1000 * 3600 * 24)
-
-        for (let i=0; i < days; i++){
-          my_dict[new Date(start_date +  start_date.setDate(start_date.getDate() + 1))] = get_english_day(new Date(start_date +  start_date.setDate(start_date.getDate())))
-        }
-        return my_dict
-      }
-
-      const d1 = new Date(formatDate("{{ campaign.start_date}}"))
-      const d2 = new Date(formatDate("{{ campaign.end_date}}"))
+      const d1 = new Date("{{ campaign.start_date.isoformat }}")
+      const d2 = new Date("{{ campaign.end_date.isoformat }}")
 
       weeks_booked = {}
 
@@ -146,7 +114,7 @@ Cost: R {{ campaign.cost }}<br>
           console.log(error)
         }
       }
-
+    
     var new_dict = JSON.parse(JSON.stringify(weeks_booked, null, 4))
 
     var count = 0
