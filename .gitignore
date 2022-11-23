@@ -6,3 +6,4 @@ __pycache__/
 /campaigns/
 zebracrossing/local_settings.py
 vendor/
+node_modules/
