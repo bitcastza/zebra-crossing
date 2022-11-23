@@ -21,15 +21,14 @@ class CampaignView(mixins.LoginRequiredMixin, DetailView):
     model = Campaign
 
     def get_context_data(self, **kwargs):
-
         sheet = BookingSheet.objects.filter(campaign=self.get_object())[0]
         table_data = BookedDay.objects.filter(bookingsheet=sheet)
         all_campaign_slots = TimeSlot.objects.all()
         bookingsheet = BookingSheet.objects.filter(campaign=self.get_object())
 
-        for date in bookingsheet:
-            start_date = datetime.strptime(str(date.start_date), "%Y-%m-%d")
-            end_date = datetime.strptime(str(date.end_date), "%Y-%m-%d")
+        for sheet in bookingsheet:
+            start_date = datetime.strptime(sheet.start_date, "%Y-%m-%d")
+            end_date = datetime.strptime(sheet.end_date, "%Y-%m-%d")
 
         all_campaign_dates = [
             start_date + timedelta(days=x)
@@ -47,10 +46,7 @@ class CampaignView(mixins.LoginRequiredMixin, DetailView):
                 day_slots.append(
                     {
                         "slot_id": slot.id,
-                        "booked": True
-                        if (datetime.strftime(date, "%Y-%m-%d"), str(slot))
-                        in booked_info.items()
-                        else False,
+                        "booked": str(slot) in booked_info.items(),
                     }
                 )
             booking_set[date] = day_slots
@@ -64,8 +60,18 @@ class CampaignView(mixins.LoginRequiredMixin, DetailView):
 
         context = super().get_context_data(**kwargs)
         context["timeslots"] = serializers.serialize("json", TimeSlot.objects.all())
-        context["booked_day"] = BookedDay.objects.all()
-        context["array"] = json.dumps(booked_view)
+        context["booked_day"] = table_data
+        # TODO: replace schedule object with:
+        # schedule = {
+        #     booking_sheet: 1,
+        #     bookings: [
+        #       ...
+        #       {
+        #         slot_time: '17:20',
+        #         date: '2022-10-01'
+        #       }
+        #     ]
+        context["schedule"] = serializers.serialize("json", booked_view)
         context["bookingsheet"] = sheet
         return context
 
@@ -191,6 +197,16 @@ def save_schedule(request, pk):
     time = None
 
     if bool(request.POST.get("schedule")) == True:
+        # TODO: replace schedule object with:
+        # schedule = {
+        #     booking_sheet: 1,
+        #     bookings: [
+        #       ...
+        #       {
+        #         slot_time: '17:20',
+        #         date: '2022-10-01'
+        #       }
+        #     ]
         for data in json.loads(request.POST.get("schedule")):
             time = TimeSlot.objects.raw(
                 "SELECT * FROM campaigns_timeslot where time=%s",
