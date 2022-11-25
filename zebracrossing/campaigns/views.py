@@ -1,9 +1,11 @@
 from datetime import datetime, date, timedelta
-from django_http_exceptions import HTTPExceptions
 import mimetypes
+import json
+from django_http_exceptions import HTTPExceptions
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import mixins
+from django.core import serializers
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse
 from django.http import HttpResponseNotAllowed
@@ -13,8 +15,6 @@ from django.urls import reverse
 
 from .models import BookingSheet, Campaign, Material, TimeSlot, BookedDay
 from .forms import BookingSheetForm, CampaignForm, MaterialForm
-from django.core import serializers
-import json
 
 
 class CampaignView(mixins.LoginRequiredMixin, DetailView):
@@ -26,18 +26,19 @@ class CampaignView(mixins.LoginRequiredMixin, DetailView):
         all_campaign_slots = TimeSlot.objects.all()
         bookingsheet = BookingSheet.objects.filter(campaign=self.get_object())
 
+        all_campaign_dates = []
         for sheet in bookingsheet:
-            start_date = datetime.strptime(sheet.start_date, "%Y-%m-%d")
-            end_date = datetime.strptime(sheet.end_date, "%Y-%m-%d")
+            start_date = sheet.start_date
+            end_date = sheet.end_date
 
-        all_campaign_dates = [
-            start_date + timedelta(days=x)
-            for x in range((end_date - start_date).days + 1)
-        ]
+            all_campaign_dates = [
+                start_date + timedelta(days=x)
+                for x in range((end_date - start_date).days + 1)
+            ]
 
         booked_info = {}
         for data in table_data:
-            booked_info[datetime.strftime(data.date, "%Y-%m-%d")] = str(data.timeslot)
+            booked_info[data.date] = data.timeslot
 
         booking_set = {}
         for date in all_campaign_dates:
@@ -46,7 +47,7 @@ class CampaignView(mixins.LoginRequiredMixin, DetailView):
                 day_slots.append(
                     {
                         "slot_id": slot.id,
-                        "booked": str(slot) in booked_info.items(),
+                        "booked": slot in booked_info.items(),
                     }
                 )
             booking_set[date] = day_slots
@@ -71,7 +72,8 @@ class CampaignView(mixins.LoginRequiredMixin, DetailView):
         #         date: '2022-10-01'
         #       }
         #     ]
-        context["schedule"] = serializers.serialize("json", booked_view)
+        context["schedule"] = json.dumps(booked_view)
+        print(context["schedule"])
         context["bookingsheet"] = sheet
         return context
 
