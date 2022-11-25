@@ -182,45 +182,35 @@ def download_item(request, item):
     return response
 
 
-def create_date_from_table_header(date):
-    result = date[str(date).find("(") + 1 : str(date).find(")")]
-    day = result.split("/")[0]
-    month = result.split("/")[1]
-    year = str(datetime.today().year)
-    date_object = datetime.strptime(f"{year}-{month}-{day}", "%Y-%m-%d").date()
-    return date_object
-
-
 @login_required
-def save_schedule(request, pk):
+def save_schedule(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
     time = None
 
-    if bool(request.POST.get("schedule")) == True:
+    print(request.POST)
+    if request.POST.get("bookings") is not None:
         # TODO: replace schedule object with:
         # schedule = {
         #     booking_sheet: 1,
         #     bookings: [
         #       ...
         #       {
-        #         slot_time: '17:20',
+        #         slot-time: '17:20',
         #         date: '2022-10-01'
         #       }
         #     ]
-        for data in json.loads(request.POST.get("schedule")):
-            time = TimeSlot.objects.raw(
-                "SELECT * FROM campaigns_timeslot where time=%s",
-                [data["slot_time"]],
-            )[0]
-            pk = data["bookingsheet_id"]
+        booking_sheet_id = request.POST.get("booking-sheet")
+        booking_sheet = BookingSheet.objects.get(id=booking_sheet_id)
+        bookings = request.POST.get("bookings")
+        for booking in bookings:
+            time = TimeSlot.objects.filter(time=booking["slot-time"]).first()
             booking = BookedDay(
-                date=create_date_from_table_header(data["date"]),
+                date=datetime.date.fromisoformat(booking["date"]),
                 timeslot=time,
-                bookingsheet=BookingSheet.objects.get(id=pk),
+                bookingsheet=booking_sheet,
             )
-
             booking.save()
     else:
         raise HTTPExceptions.NO_CONTENT("No data passed to be processed and saved.")

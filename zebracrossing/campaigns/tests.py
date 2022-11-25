@@ -1,13 +1,14 @@
 import datetime
+import json
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.files import File
-from django.test import TestCase, Client
-from django.utils.translation import gettext_lazy as _
+from django.test import TestCase, RequestFactory
 from django.urls import reverse
 
 from .models import BookingSheet, Campaign, TimeSlot, BookedDay
 from .forms import BookingSheetForm
-import json
+from .views import save_schedule
 
 
 class TimeSlotTests(TestCase):
@@ -24,42 +25,52 @@ class TimeSlotTests(TestCase):
 
 class SaveToTableTest(TestCase):
     @classmethod
-    def setUp(self):
-        self.client = Client()
-        self.save_to_table_url = reverse("campaigns:save_to_table")
-        self.fp = open("README.md")
-        self.campaign = Campaign.objects.create(
+    def setUp(cls):
+        cls.fp = open("README.md")
+        cls.campaign = Campaign.objects.create(
             client="Telkom", ad_agency="Telkom agency"
         )
-        self.booking_sheet = BookingSheet(
+        cls.booking_sheet = BookingSheet(
             ad_type="REC",
             start_date=datetime.date(year=2022, month=6, day=20),
             end_date=datetime.date(year=2022, month=7, day=31),
-            campaign=self.campaign,
-            booking_sheet=File(self.fp),
+            campaign=cls.campaign,
+            booking_sheet=File(cls.fp),
             cost=23000,
         )
-        self.booking_sheet.save()
-
-        self.time_slot = TimeSlot(time=datetime.time(hour=12, minute=53))
-        self.time_slot.save()
-
-        self.booked_day = BookedDay.objects.create(
+        cls.booking_sheet.save()
+        cls.time_slot = TimeSlot(time=datetime.time(hour=12, minute=53))
+        cls.time_slot.save()
+        cls.booked_day = BookedDay.objects.create(
             date=datetime.date(2022, 6, 22),
-            timeslot=self.time_slot,
-            bookingsheet=self.booking_sheet,
+            timeslot=cls.time_slot,
+            bookingsheet=cls.booking_sheet,
         )
 
-    def test_save_to_table(self):
-        ajax_data_expected = [
-            {"slot_time": "12:53", "date": "Wednesday (22/06)", "bookingsheet_id": "1"}
-        ]
-        response = self.client.post(
-            self.save_to_table_url,
+        cls.factory = RequestFactory()
+        cls.save_schedule_url = reverse("campaigns:save_schedule",
+                                        kwargs={"pk": cls.campaign.pk})
+        cls.user = get_user_model().objects.create_user(username="test")
+
+    def test_save_schedule(self):
+        ajax_data_expected = {
+            "booking-sheet": self.booking_sheet.id,
+            "bookings": [
+                {"slot-time": "12:53", "date": "2022-06-22"},
+            ],
+        }
+        request = self.factory.post(
+            self.save_schedule_url,
             ajax_data_expected,
             content_type="application/json",
         )
+        print(json.dumps(ajax_data_expected))
+        print(request.body)
+        request.user = self.user
+        response = save_schedule(request)
+        print(response)
 
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(
             BookingSheet.objects.get(start_date=self.booking_sheet.start_date),
             self.booking_sheet,
@@ -71,11 +82,10 @@ class SaveToTableTest(TestCase):
         self.assertEqual(
             BookedDay.objects.get(date=self.booked_day.date), self.booked_day
         )
-        self.assertEqual(response.status_code, 200)
 
     @classmethod
-    def tearDownClass(self):
-        self.fp.close()
+    def tearDownClass(cls):
+        cls.fp.close()
         super().tearDownClass()
 
 
