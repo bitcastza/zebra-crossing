@@ -27,7 +27,7 @@ repos:
     rev: v2.7.1
     hooks:
       - id: prettier
-        files: \.(md|mdx|yml|yaml|ts|tsx|json|css)$
+        files: \.(md|mdx|yml|yaml|js|jsx|ts|tsx|json|css)$
 
   - repo: https://github.com/asottile/pyupgrade
     rev: v2.34.0
