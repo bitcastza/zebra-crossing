@@ -1,14 +1,12 @@
 from datetime import datetime, date, timedelta
 import mimetypes
 import json
-from django_http_exceptions import HTTPExceptions
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import mixins
 from django.core import serializers
 from django.shortcuts import get_object_or_404, render
-from django.http import HttpResponse
-from django.http import HttpResponseNotAllowed
+from django.http import HttpResponse, HttpResponseNotAllowed, HttpResponseBadRequest
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView
 from django.urls import reverse
@@ -183,17 +181,16 @@ def download_item(request, item):
 
 
 @login_required
-def save_schedule(request):
+def save_schedule(request, pk):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
     time = None
 
-    print(request.POST)
     if request.POST.get("bookings") is not None:
         # TODO: replace schedule object with:
         # schedule = {
-        #     booking_sheet: 1,
+        #     booking-sheet: 1,
         #     bookings: [
         #       ...
         #       {
@@ -213,5 +210,5 @@ def save_schedule(request):
             )
             booking.save()
     else:
-        raise HTTPExceptions.NO_CONTENT("No data passed to be processed and saved.")
+        return HttpResponseBadRequest("No data passed to be processed and saved.")
     return HttpResponse(status=200)

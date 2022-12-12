@@ -3,7 +3,7 @@ import json
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.files import File
-from django.test import TestCase, RequestFactory
+from django.test import TestCase, Client
 from django.urls import reverse
 
 from .models import BookingSheet, Campaign, TimeSlot, BookedDay
@@ -47,10 +47,11 @@ class SaveToTableTest(TestCase):
             bookingsheet=cls.booking_sheet,
         )
 
-        cls.factory = RequestFactory()
+        cls.client = Client()
         cls.save_schedule_url = reverse("campaigns:save_schedule",
                                         kwargs={"pk": cls.campaign.pk})
-        cls.user = get_user_model().objects.create_user(username="test")
+        cls.user = get_user_model().objects.create_user(username="test",
+                                                        password="test")
 
     def test_save_schedule(self):
         ajax_data_expected = {
@@ -59,16 +60,12 @@ class SaveToTableTest(TestCase):
                 {"slot-time": "12:53", "date": "2022-06-22"},
             ],
         }
-        request = self.factory.post(
+        self.client.login(username="test", password="test")
+        response = self.client.post(
             self.save_schedule_url,
             ajax_data_expected,
             content_type="application/json",
         )
-        print(json.dumps(ajax_data_expected))
-        print(request.body)
-        request.user = self.user
-        response = save_schedule(request)
-        print(response)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
