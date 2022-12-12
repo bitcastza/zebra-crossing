@@ -1,5 +1,4 @@
 import datetime
-import json
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.files import File
@@ -8,7 +7,6 @@ from django.urls import reverse
 
 from .models import BookingSheet, Campaign, TimeSlot, BookedDay
 from .forms import BookingSheetForm
-from .views import save_schedule
 
 
 class TimeSlotTests(TestCase):
@@ -23,7 +21,7 @@ class TimeSlotTests(TestCase):
         self.assertEqual(time_slot, other)
 
 
-class SaveToTableTest(TestCase):
+class SaveScheduleTests(TestCase):
     @classmethod
     def setUp(cls):
         cls.fp = open("README.md")
@@ -41,7 +39,7 @@ class SaveToTableTest(TestCase):
         cls.booking_sheet.save()
         cls.time_slot = TimeSlot(time=datetime.time(hour=12, minute=53))
         cls.time_slot.save()
-        cls.booked_day = BookedDay.objects.create(
+        cls.booked_day = BookedDay(
             date=datetime.date(2022, 6, 22),
             timeslot=cls.time_slot,
             bookingsheet=cls.booking_sheet,
@@ -53,32 +51,54 @@ class SaveToTableTest(TestCase):
         cls.user = get_user_model().objects.create_user(username="test",
                                                         password="test")
 
+    def test_save_schedule_empty(self):
+        self.client.login(username="test", password="test")
+        response = self.client.post(
+            self.save_schedule_url,
+            {},
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_save_schedule_404(self):
+        expected_data = {
+            "booking-sheet": self.booking_sheet.id + 1,
+        }
+        self.client.login(username="test", password="test")
+        response = self.client.post(
+            self.save_schedule_url,
+            expected_data,
+            # TODO: this results in request.POST being empty
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 404)
+
     def test_save_schedule(self):
-        ajax_data_expected = {
+        expected_data = {
             "booking-sheet": self.booking_sheet.id,
             "bookings": [
-                {"slot-time": "12:53", "date": "2022-06-22"},
+                {
+                    "slot-time": self.time_slot.time,
+                    "date": self.booked_day.date.isoformat(),
+                },
             ],
         }
         self.client.login(username="test", password="test")
         response = self.client.post(
             self.save_schedule_url,
-            ajax_data_expected,
+            expected_data,
             content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            BookingSheet.objects.get(start_date=self.booking_sheet.start_date),
-            self.booking_sheet,
+        booking = BookedDay.objects.get(
+            date=self.booked_day.date, timeslot=self.time_slot
         )
-        self.assertEqual(TimeSlot.objects.get(time=self.time_slot.time), self.time_slot)
-        self.assertEqual(
-            Campaign.objects.get(client=self.campaign.client), self.campaign
-        )
-        self.assertEqual(
-            BookedDay.objects.get(date=self.booked_day.date), self.booked_day
-        )
+        self.assertEqual(booking.date, self.booked_day.date)
+        self.assertEqual(booking.timeslot, self.booked_day.timeslot)
+        self.assertEqual(booking.bookingsheet, self.booked_day.bookingsheet)
 
     @classmethod
     def tearDownClass(cls):

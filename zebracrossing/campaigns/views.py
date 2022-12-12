@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import mixins
 from django.core import serializers
 from django.shortcuts import get_object_or_404, render
-from django.http import HttpResponse, HttpResponseNotAllowed, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseNotAllowed, HttpResponseBadRequest, HttpResponseNotFound
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView
 from django.urls import reverse
@@ -39,7 +39,7 @@ class CampaignView(mixins.LoginRequiredMixin, DetailView):
             booked_info[data.date] = data.timeslot
 
         booking_set = {}
-        for date in all_campaign_dates:
+        for d in all_campaign_dates:
             day_slots = []
             for slot in all_campaign_slots:
                 day_slots.append(
@@ -48,10 +48,10 @@ class CampaignView(mixins.LoginRequiredMixin, DetailView):
                         "booked": slot in booked_info.items(),
                     }
                 )
-            booking_set[date] = day_slots
+            booking_set[d] = day_slots
 
         booked_view = []
-        for date, slots in booking_set.items():
+        for d, slots in booking_set.items():
             booked_day = []
             for slot in slots:
                 booked_day.append(slot["booked"])
@@ -71,7 +71,6 @@ class CampaignView(mixins.LoginRequiredMixin, DetailView):
         #       }
         #     ]
         context["schedule"] = json.dumps(booked_view)
-        print(context["schedule"])
         context["bookingsheet"] = sheet
         return context
 
@@ -91,9 +90,9 @@ def index(request):
         end_date = campaign.end_date
         if campaign.is_active():
             active_campaigns.append(campaign)
-        elif end_date != None and end_date < date.today():
+        elif end_date is not None and end_date < date.today():
             past_campaigns.append(campaign)
-        elif start_date != None and start_date - date.today() < timedelta(weeks=1):
+        elif start_date is not None and start_date - date.today() < timedelta(weeks=1):
             upcoming_campaigns.append(campaign)
 
     context = {
@@ -187,28 +186,35 @@ def save_schedule(request, pk):
 
     time = None
 
-    if request.POST.get("bookings") is not None:
-        # TODO: replace schedule object with:
-        # schedule = {
-        #     booking-sheet: 1,
-        #     bookings: [
-        #       ...
-        #       {
-        #         slot-time: '17:20',
-        #         date: '2022-10-01'
-        #       }
-        #     ]
-        booking_sheet_id = request.POST.get("booking-sheet")
+    body = json.loads(request.body)
+    if body == {}:
+        return HttpResponseBadRequest("schedule is empty")
+
+    # TODO: replace schedule object with:
+    # schedule = {
+    #     booking-sheet: 1,
+    #     bookings: [
+    #       ...
+    #       {
+    #         slot-time: '17:20',
+    #         date: '2022-10-01'
+    #       }
+    #     ]
+    booking_sheet_id = body["booking-sheet"]
+    try:
         booking_sheet = BookingSheet.objects.get(id=booking_sheet_id)
-        bookings = request.POST.get("bookings")
-        for booking in bookings:
-            time = TimeSlot.objects.filter(time=booking["slot-time"]).first()
-            booking = BookedDay(
-                date=datetime.date.fromisoformat(booking["date"]),
-                timeslot=time,
-                bookingsheet=booking_sheet,
-            )
-            booking.save()
-    else:
-        return HttpResponseBadRequest("No data passed to be processed and saved.")
+    except BookingSheet.DoesNotExist:
+        return HttpResponseNotFound(
+            f"Booking sheet with ID {booking_sheet_id} not found"
+        )
+
+    bookings = body["bookings"]
+    for booking in bookings:
+        time = TimeSlot.objects.filter(time=booking["slot-time"]).first()
+        booking = BookedDay(
+            date=date.fromisoformat(booking["date"]),
+            timeslot=time,
+            bookingsheet=booking_sheet,
+        )
+        booking.save()
     return HttpResponse(status=200)
