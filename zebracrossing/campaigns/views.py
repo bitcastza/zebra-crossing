@@ -6,7 +6,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import mixins
 from django.core import serializers
 from django.shortcuts import get_object_or_404, render
-from django.http import HttpResponse, HttpResponseNotAllowed, HttpResponseBadRequest, HttpResponseNotFound
+from django.http import (
+    HttpResponse,
+    HttpResponseNotAllowed,
+    HttpResponseBadRequest,
+    HttpResponseNotFound,
+)
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView
 from django.urls import reverse

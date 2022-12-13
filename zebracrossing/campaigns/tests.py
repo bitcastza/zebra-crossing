@@ -46,10 +46,12 @@ class SaveScheduleTests(TestCase):
         )
 
         cls.client = Client()
-        cls.save_schedule_url = reverse("campaigns:save_schedule",
-                                        kwargs={"pk": cls.campaign.pk})
-        cls.user = get_user_model().objects.create_user(username="test",
-                                                        password="test")
+        cls.save_schedule_url = reverse(
+            "campaigns:save_schedule", kwargs={"pk": cls.campaign.pk}
+        )
+        cls.user = get_user_model().objects.create_user(
+            username="test", password="test"
+        )
 
     def test_save_schedule_empty(self):
         self.client.login(username="test", password="test")
