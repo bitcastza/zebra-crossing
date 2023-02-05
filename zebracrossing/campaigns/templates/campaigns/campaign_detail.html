@@ -8,8 +8,9 @@
     const endDate = new Date('{{ campaign.end_date.isoformat }}')
     const timeslots = JSON.parse('{{ timeslots | safe }}')
     const schedule = JSON.parse('{{ schedule }}')
+    var bookingsheet_id = JSON.parse("{{ bookingsheet.id }}")
 
-    processScheduleTable(startDate, endDate, timeslots, schedule)
+    processScheduleTable(startDate, endDate, timeslots, schedule, bookingsheet_id)
   })
 </script>
 {% endblock %}
@@ -65,11 +66,14 @@ Cost: R {{ campaign.cost }}<br>
   </div>
 </div>
 <div id="tab">
-  <table id="timeslot-table" class="table table-striped table=bordered">
+  <table id="timeslot-table" class="table table-striped table-bordered">
     <thead class="table-dark">
       <tr>
         <th scope="col">Slot</th>
       </tr>
+    </thead>
+    <tbody>
+    </tbody> 
   </table>
 </div>
 

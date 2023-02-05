@@ -18,6 +18,9 @@ from django.urls import reverse
 
 from .models import BookingSheet, Campaign, Material, TimeSlot, BookedDay
 from .forms import BookingSheetForm, CampaignForm, MaterialForm
+from urllib.parse import unquote
+from ast import literal_eval
+import re
 
 
 class CampaignView(mixins.LoginRequiredMixin, DetailView):
@@ -50,7 +53,7 @@ class CampaignView(mixins.LoginRequiredMixin, DetailView):
                 day_slots.append(
                     {
                         "slot_id": slot.id,
-                        "booked": slot in booked_info.items(),
+                        "booked": True if (d, slot) in booked_info.items() else False
                     }
                 )
             booking_set[d] = day_slots
@@ -190,36 +193,31 @@ def save_schedule(request, pk):
         return HttpResponseNotAllowed(["POST"])
 
     time = None
+    booking_sheet_id = None
 
-    body = json.loads(request.body)
-    if body == {}:
+    body = json.loads(request.POST['schedule'])
+    print(body)
+    #print(datetime.strptime("Monday 7 November", "%A %d %B"))
+
+    if len(body) == 0:
         return HttpResponseBadRequest("schedule is empty")
 
-    # TODO: replace schedule object with:
-    # schedule = {
-    #     booking-sheet: 1,
-    #     bookings: [
-    #       ...
-    #       {
-    #         slot-time: '17:20',
-    #         date: '2022-10-01'
-    #       }
-    #     ]
-    booking_sheet_id = body["booking-sheet"]
-    try:
-        booking_sheet = BookingSheet.objects.get(id=booking_sheet_id)
-    except BookingSheet.DoesNotExist:
-        return HttpResponseNotFound(
-            f"Booking sheet with ID {booking_sheet_id} not found"
-        )
 
-    bookings = body["bookings"]
-    for booking in bookings:
-        time = TimeSlot.objects.filter(time=booking["slot-time"]).first()
-        booking = BookedDay(
-            date=date.fromisoformat(booking["date"]),
-            timeslot=time,
-            bookingsheet=booking_sheet,
-        )
-        booking.save()
+    for booking in body:
+        time = TimeSlot.objects.filter(time=booking["slot_time"]).first()
+        booking_sheet_id = booking['bookingsheet_id']
+
+        try:
+            booking_sheet = BookingSheet.objects.get(id=booking_sheet_id)
+        except BookingSheet.DoesNotExist:
+            return HttpResponseNotFound(
+                f"Booking sheet with ID {booking_sheet_id} not found"
+            )
+
+        #booking = BookedDay(
+            #date=date.fromisoformat(booking["date"]),
+            #timeslot=time,
+            #bookingsheet=booking_sheet,
+        #)
+        #booking.save()
     return HttpResponse(status=200)

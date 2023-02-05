@@ -33,10 +33,10 @@ function getWeeklyDays(start, end) {
   const dayList = [];
   const currentDate = new Date(start);
   // eslint-disable-next-line no-unmodified-loop-condition
-  for (let i = 0; currentDate < end; i += 7) {
+  for (let i = 0; i < end.getDate()-1; i += 6) {
     currentDate.setDate(start.getDate() + i);
     const endDate = new Date(currentDate);
-    endDate.setDate(endDate.getDate() + 7);
+    endDate.setDate(endDate.getDate() + 6);
     dayList.push(daysBetween(currentDate, endDate));
   }
   return dayList;
@@ -69,39 +69,54 @@ function sendToServer(schedule) {
   });
 }
 
+function add_td_to_table(weeksBooked, count){
+  var tds = ""
+  for (var j=0; j < weeksBooked[count].length; j++){
+  tds += "<td class='editable'></td>"
+  }
+  return tds
+}
+
+
 function drawTable(
   weeksBooked,
   paginationOffset,
   dayRange,
   timeslots,
-  schedule
+  schedule, 
+  count
 ) {
   const table = document.getElementById("timeslot-table");
+  var content_holder = ""
   for (let i = 0; i < Object.keys(timeslots).length; i++) {
-    const timeslotTd = document.createElement("TD");
+    const timeslotTd = document.createElement("TD");  
     timeslotTd.classList.add("time");
-    timeslotTd.innerHTML = timeslots[i].toString();
-    const rowData = populateRow(dayRange);
-    rowData.unshift(timeslotTd);
-    const row = table.insertRow();
-    row.innerHTML = rowData;
-    console.log(row.cells);
-  }
+    timeslotTd.innerHTML = timeslots[i].fields.time;
 
-  for (let i = 0; i < weeksBooked[paginationOffset].length; i++) {
+    var table_content =
+    `<tr>
+    <td class='time'>${timeslotTd.innerHTML}</td>
+    ${add_td_to_table(weeksBooked, count)}
+    </tr>`
+    content_holder += table_content
+
+    var tableData = document.querySelector('tbody')
+    tableData.innerHTML = content_holder
+  }
+  var days = weeksBooked[count]
+  var headers = document.querySelector('#timeslot-table thead tr:first-child')
+  var header_obj = `<th>Slot</th>`
+  for (let i = 0; i < days.length; i++) {
     const header = document.createElement("TH");
     header.setAttribute("scope", "col");
-    header.innerHTML = getDayName(weeksBooked[paginationOffset][i]);
-    table.tHead.firstElementChild.appendChild(header);
-  }
-
-  if (paginationOffset === Object.keys(weeksBooked).length - 1) {
-    document.getElementById("next-button").disabled = true;
+    header_obj += `<th>${header.innerHTML = getDayName(days[i]) +" "+ days[i].getDate() + " "+ days[i].toLocaleString('default', { month: 'long' })}</th>`
+    headers.innerHTML = header_obj 
   }
 
   if (paginationOffset === 0) {
-    document.getElementById("previous-button").disabled = true;
-  }
+     document.getElementById("previous-button").disabled = true;
+     document.getElementById("next-button").disabled = false;
+   }
 
   const visibleSchedule = schedule.slice(
     paginationOffset,
@@ -110,50 +125,48 @@ function drawTable(
 
   for (let i = 0; i < visibleSchedule.length; i++) {
     for (let j = 0; j < visibleSchedule[i].length; j++) {
-      table.rows[j].cells[i].innerHTML = visibleSchedule[i][j] ? "X" : "";
+      table.rows[j+1].cells[i+1].innerHTML = visibleSchedule[i][j] ? "X" : "";
     }
   }
 }
 
+var count = 0
 // eslint-disable-next-line no-unused-vars
-function processScheduleTable(start, end, timeslots, schedule) {
+function processScheduleTable(start, end, timeslots, schedule, bookingsheet_id) {
   const weeksBooked = getWeeklyDays(start, end);
   let paginationOffset = 0;
   const dayRange = 7;
 
-  drawTable(weeksBooked, paginationOffset, dayRange, timeslots, schedule);
+  drawTable(weeksBooked, paginationOffset, dayRange, timeslots, schedule, count);
 
-  document.getElementById("previous-button").onClick(function () {
-    paginationOffset -= dayRange;
+  document.getElementById("previous-button").onclick = function () {
+    paginationOffset -= dayRange
+    count --;
+    drawTable(weeksBooked, paginationOffset, dayRange, timeslots, schedule, count);
+  };
 
-    if (paginationOffset < 0) {
-      paginationOffset = 0;
-    }
-
-    drawTable(weeksBooked, paginationOffset, dayRange, timeslots, schedule);
-  });
-
-  document.getElementById("next-button").onClick(function () {
+  document.getElementById("next-button").onclick = function () {
     paginationOffset += dayRange;
-
-    if (
-      paginationOffset >
-      weeksBooked[weeksBooked.length - 1].length - dayRange
-    ) {
-      paginationOffset = weeksBooked[weeksBooked.length - 1].length - dayRange;
+    count ++;
+    if (count >= 1){
+      document.getElementById("previous-button").disabled = false
+    }
+    if (count == weeksBooked.length-1){
+      document.getElementById("next-button").disabled = true
     }
 
-    drawTable(weeksBooked, paginationOffset, dayRange, timeslots, schedule);
-  });
+    drawTable(weeksBooked, paginationOffset, dayRange, timeslots, schedule, count);
+  };
 
+  var table_data = []
   $("td").on("input", function () {
     const cell = $(this);
     const slotTime = cell.closest("tr").find(".time").text();
     const headerDate = cell.closest("table").find("th").eq(cell.index()).text();
-    schedule.push({ slot_time: slotTime, date: headerDate });
+    table_data.push({ slot_time: slotTime, date: headerDate, bookingsheet_id: bookingsheet_id });
   });
 
-  document.getElementById("table-edit").onClick(function () {
+  document.getElementById("table-edit").onclick = function () {
     const currentTD = document.getElementsByClassName("editable");
     if ($(this).html() == "Edit") {
       $.each(currentTD, function () {
@@ -165,8 +178,8 @@ function processScheduleTable(start, end, timeslots, schedule) {
       });
     }
     if ($(this).html() === "Save") {
-      sendToServer(schedule);
+      sendToServer(table_data);
     }
     $(this).html($(this).html() === "Edit" ? "Save" : "Edit");
-  });
+  };
 }
