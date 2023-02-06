@@ -53,7 +53,7 @@ class CampaignView(mixins.LoginRequiredMixin, DetailView):
                 day_slots.append(
                     {
                         "slot_id": slot.id,
-                        "booked": True if (d, slot) in booked_info.items() else False
+                        "booked": True if (d, slot) in booked_info.items() else False,
                     }
                 )
             booking_set[d] = day_slots
@@ -195,17 +195,14 @@ def save_schedule(request, pk):
     time = None
     booking_sheet_id = None
 
-    body = json.loads(request.POST['schedule'])
-    print(body)
-    #print(datetime.strptime("Monday 7 November", "%A %d %B"))
+    body = json.loads(request.POST["schedule"])
 
     if len(body) == 0:
         return HttpResponseBadRequest("schedule is empty")
 
-
     for booking in body:
         time = TimeSlot.objects.filter(time=booking["slot_time"]).first()
-        booking_sheet_id = booking['bookingsheet_id']
+        booking_sheet_id = booking["bookingsheet_id"]
 
         try:
             booking_sheet = BookingSheet.objects.get(id=booking_sheet_id)
@@ -214,10 +211,10 @@ def save_schedule(request, pk):
                 f"Booking sheet with ID {booking_sheet_id} not found"
             )
 
-        #booking = BookedDay(
-            #date=date.fromisoformat(booking["date"]),
-            #timeslot=time,
-            #bookingsheet=booking_sheet,
-        #)
-        #booking.save()
+        booking = BookedDay(
+            date=date.fromisoformat(booking["date"]),
+            timeslot=time,
+            bookingsheet=booking_sheet,
+        )
+        booking.save()
     return HttpResponse(status=200)
