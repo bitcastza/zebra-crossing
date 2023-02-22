@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.test import TestCase, Client
 from django.urls import reverse
+import json
 
 from .models import BookingSheet, Campaign, TimeSlot, BookedDay
 from .forms import BookingSheetForm
@@ -44,6 +45,7 @@ class SaveScheduleTests(TestCase):
             timeslot=cls.time_slot,
             bookingsheet=cls.booking_sheet,
         )
+        cls.booked_day.save()
 
         cls.client = Client()
         cls.save_schedule_url = reverse(
@@ -55,45 +57,36 @@ class SaveScheduleTests(TestCase):
 
     def test_save_schedule_empty(self):
         self.client.login(username="test", password="test")
-        response = self.client.post(
-            self.save_schedule_url,
-            {},
-            content_type="application/json",
-        )
-
+        response = self.client.post(self.save_schedule_url, {"schedule": [{}]})
         self.assertEqual(response.status_code, 400)
 
     def test_save_schedule_404(self):
-        expected_data = {
-            "booking-sheet": self.booking_sheet.id + 1,
-        }
-        self.client.login(username="test", password="test")
-        response = self.client.post(
-            self.save_schedule_url,
-            expected_data,
-            # TODO: this results in request.POST being empty
-            content_type="application/json",
+        expected_data = json.dumps(
+            [
+                {
+                    "slot_time": f"{self.time_slot.time}",
+                    "date": self.booked_day.date.isoformat(),
+                    "bookingsheet_id": self.booking_sheet.id + 1,
+                }
+            ]
         )
+        self.client.login(username="test", password="test")
+        response = self.client.post(self.save_schedule_url, {"schedule": expected_data})
 
         self.assertEqual(response.status_code, 404)
 
     def test_save_schedule(self):
-        expected_data = {
-            "booking-sheet": self.booking_sheet.id,
-            "bookings": [
+        expected_data = json.dumps(
+            [
                 {
-                    "slot-time": self.time_slot.time,
+                    "slot_time": f"{self.time_slot.time}",
                     "date": self.booked_day.date.isoformat(),
-                },
-            ],
-        }
-        self.client.login(username="test", password="test")
-        response = self.client.post(
-            self.save_schedule_url,
-            expected_data,
-            content_type="application/json",
+                    "bookingsheet_id": self.booking_sheet.id,
+                }
+            ]
         )
-
+        self.client.login(username="test", password="test")
+        response = self.client.post(self.save_schedule_url, {"schedule": expected_data})
         self.assertEqual(response.status_code, 200)
         booking = BookedDay.objects.get(
             date=self.booked_day.date, timeslot=self.time_slot

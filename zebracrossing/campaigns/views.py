@@ -1,4 +1,4 @@
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, time as dt
 import mimetypes
 import json
 
@@ -18,9 +18,6 @@ from django.urls import reverse
 
 from .models import BookingSheet, Campaign, Material, TimeSlot, BookedDay
 from .forms import BookingSheetForm, CampaignForm, MaterialForm
-from urllib.parse import unquote
-from ast import literal_eval
-import re
 
 
 class CampaignView(mixins.LoginRequiredMixin, DetailView):
@@ -68,16 +65,6 @@ class CampaignView(mixins.LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["timeslots"] = serializers.serialize("json", TimeSlot.objects.all())
         context["booked_day"] = table_data
-        # TODO: replace schedule object with:
-        # schedule = {
-        #     booking_sheet: 1,
-        #     bookings: [
-        #       ...
-        #       {
-        #         slot_time: '17:20',
-        #         date: '2022-10-01'
-        #       }
-        #     ]
         context["schedule"] = json.dumps(booked_view)
         context["bookingsheet"] = sheet
         return context
@@ -187,6 +174,15 @@ def download_item(request, item):
     return response
 
 
+def datetime_from_js_isoformat(string: str) -> datetime:
+    """Creates a datetime object from a JavaScript ISO format string."""
+
+    if string.endswith("Z"):
+        return datetime.fromisoformat(string[:-1])
+
+    return datetime.fromisoformat(string)
+
+
 @login_required
 def save_schedule(request, pk):
     if request.method != "POST":
@@ -201,7 +197,7 @@ def save_schedule(request, pk):
         return HttpResponseBadRequest("schedule is empty")
 
     for booking in body:
-        time = TimeSlot.objects.filter(time=booking["slot_time"]).first()
+        time = TimeSlot.objects.filter(time=dt.fromisoformat(booking["slot_time"]))[0]
         booking_sheet_id = booking["bookingsheet_id"]
 
         try:
@@ -211,10 +207,10 @@ def save_schedule(request, pk):
                 f"Booking sheet with ID {booking_sheet_id} not found"
             )
 
-        booking = BookedDay(
-            date=date.fromisoformat(booking["date"]),
+        table_booking = BookedDay(
+            date=datetime_from_js_isoformat(booking["date"]),
             timeslot=time,
             bookingsheet=booking_sheet,
         )
-        booking.save()
+        table_booking.save()
     return HttpResponse(status=200)

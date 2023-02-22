@@ -11,49 +11,36 @@ function getDayName(date) {
   return days[date.getDay()];
 }
 
-function daysBetween(start, end) {
-  const dayList = [];
-  const currentDate = new Date(start);
-  // eslint-disable-next-line no-unmodified-loop-condition
-  for (let i = 0; currentDate < end; i++) {
-    currentDate.setDate(start.getDate() + i);
-    // Add a copy of the date so that it is not modified by the next iteration
-    dayList.push(new Date(currentDate));
+function daysBetween(startDate, endDate) {
+  var dateArray = new Array();
+  let currentDate = startDate;
+  while (currentDate <= endDate) {
+    dateArray.push(new Date(currentDate));
+    currentDate = startDate.setDate(startDate.getDate() + 1);
   }
-  return dayList;
+  return dateArray;
 }
 
 /**
  * Returns the days between start and end divided up by week
  */
-function getWeeklyDays(start, end) {
-  if (!start || !end) {
-    alert("Please create a bookingsheet in the database");
+function getWeeklyDays(startDate, endDate) {
+  let arr = daysBetween(startDate, endDate);
+  const res = [];
+  let limit = 0;
+  while (limit <= arr.length) {
+    res.push(arr.slice(limit, 7 + limit));
+    limit += 7;
   }
-  const dayList = [];
-  const currentDate = new Date(start);
-  // eslint-disable-next-line no-unmodified-loop-condition
-  for (let i = 0; i < end.getDate() - 1; i += 6) {
-    currentDate.setDate(start.getDate() + i);
-    const endDate = new Date(currentDate);
-    endDate.setDate(endDate.getDate() + 6);
-    dayList.push(daysBetween(currentDate, endDate));
+  if (res.slice(-1)[0].length == 0) {
+    res.pop(-1);
   }
-  return dayList;
+  return res;
 }
 
 /**
  * Returns a list of td nodes long enough to contain numDays number of days
  */
-function populateRow(numDays) {
-  const data = [];
-  for (let i = 0; i < numDays; i++) {
-    const td = document.createElement("TD");
-    td.classList.add("editable");
-    data.push(td);
-  }
-  return data;
-}
 
 function sendToServer(schedule) {
   const payloadSchedule = JSON.stringify(schedule);
@@ -90,7 +77,7 @@ function drawTable(
   for (let i = 0; i < Object.keys(timeslots).length; i++) {
     const timeslotTd = document.createElement("TD");
     timeslotTd.classList.add("time");
-    timeslotTd.innerHTML = timeslots[i].fields.time;
+    timeslotTd.innerHTML = timeslots[i].fields.time.slice(0, 5);
 
     var table_content = `<tr>
     <td class='time'>${timeslotTd.innerHTML}</td>
@@ -135,7 +122,19 @@ function drawTable(
   }
 }
 
+function createTableEditDate(startDate, paginationOffset, table_column_index) {
+  let currentDate = new Date(startDate);
+  return new Date(
+    currentDate.setDate(
+      new Date(startDate).getDate() +
+        paginationOffset +
+        (table_column_index - 1)
+    )
+  );
+}
+
 var count = 0;
+var startDate = "";
 // eslint-disable-next-line no-unused-vars
 function processScheduleTable(
   start,
@@ -144,6 +143,25 @@ function processScheduleTable(
   schedule,
   bookingsheet_id
 ) {
+  const starting_date = new Date(start);
+  var table_data = [];
+  $(function () {
+    $(document).on("input", ".editable", function () {
+      let table_column_index = $(this).closest("td").index();
+      const cell = $(this);
+      const slotTime = cell.closest("tr").find(".time").text();
+      table_data.push({
+        slot_time: slotTime,
+        date: createTableEditDate(
+          starting_date,
+          paginationOffset,
+          table_column_index
+        ),
+        bookingsheet_id: bookingsheet_id,
+      });
+    });
+  });
+
   const weeksBooked = getWeeklyDays(start, end);
   let paginationOffset = 0;
   const dayRange = 7;
@@ -158,6 +176,9 @@ function processScheduleTable(
   );
 
   document.getElementById("previous-button").onclick = function () {
+    if (count > 1 && count < weeksBooked.length) {
+      document.getElementById("next-button").disabled = false;
+    }
     paginationOffset -= dayRange;
     count--;
     drawTable(
@@ -189,18 +210,6 @@ function processScheduleTable(
       count
     );
   };
-
-  var table_data = [];
-  $("td").on("input", function () {
-    const cell = $(this);
-    const slotTime = cell.closest("tr").find(".time").text();
-    const headerDate = cell.closest("table").find("th").eq(cell.index()).text();
-    table_data.push({
-      slot_time: slotTime,
-      date: headerDate,
-      bookingsheet_id: bookingsheet_id,
-    });
-  });
 
   document.getElementById("table-edit").onclick = function () {
     const currentTD = document.getElementsByClassName("editable");
