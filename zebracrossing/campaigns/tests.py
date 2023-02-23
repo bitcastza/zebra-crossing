@@ -45,7 +45,6 @@ class SaveScheduleTests(TestCase):
             timeslot=cls.time_slot,
             bookingsheet=cls.booking_sheet,
         )
-        cls.booked_day.save()
 
         cls.client = Client()
         cls.save_schedule_url = reverse(
