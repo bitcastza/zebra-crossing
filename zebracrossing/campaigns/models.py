@@ -32,6 +32,7 @@ class BookedDay(models.Model):
             + str(self.bookingsheet)
         )
 
+
 class BookedDay(models.Model):
     date = models.DateField()
     timeslot = models.ForeignKey("TimeSlot", on_delete=models.CASCADE)
