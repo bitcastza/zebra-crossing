@@ -5,5 +5,4 @@ __pycache__/
 *.log
 /campaigns/
 zebracrossing/local_settings.py
-vendor/
 node_modules/
