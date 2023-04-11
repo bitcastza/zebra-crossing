@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("campaigns", "0010_auto_20200206_1229"),
+        ("campaigns", "0001_initial"),
     ]
 
     operations = [
@@ -38,34 +38,5 @@ class Migration(migrations.Migration):
             field=models.BigAutoField(
                 auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
             ),
-        ),
-        migrations.CreateModel(
-            name="BookedDay",
-            fields=[
-                (
-                    "id",
-                    models.BigAutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                ("date", models.DateField()),
-                (
-                    "bookingsheet",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="campaigns.bookingsheet",
-                    ),
-                ),
-                (
-                    "timeslot",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="campaigns.timeslot",
-                    ),
-                ),
-            ],
         ),
     ]

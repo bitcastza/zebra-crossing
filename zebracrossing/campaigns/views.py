@@ -80,7 +80,7 @@ class BookingView(mixins.LoginRequiredMixin, DetailView):
     model = BookingSheet
 
 
-class scheduleList(mixins.LoginRequiredMixin, APIView):
+class ScheduleList(mixins.LoginRequiredMixin, APIView):
     def get(self, request):
         start_date = request.GET.get("start")
         end_date = request.GET.get("end")
