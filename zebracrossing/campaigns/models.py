@@ -17,6 +17,7 @@ class TimeSlot(models.Model):
             return self.time == other.time
         return False
 
+
 class BookedDay(models.Model):
     date = models.DateField()
     timeslot = models.ForeignKey("TimeSlot", on_delete=models.CASCADE)

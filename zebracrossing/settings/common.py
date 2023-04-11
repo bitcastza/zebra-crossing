@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "fontawesomefree",
     "django_bootstrap5",
-    "rest_framework"
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
