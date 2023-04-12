@@ -8,6 +8,7 @@ import json
 
 from .models import BookingSheet, Campaign, TimeSlot, BookedDay
 from .forms import BookingSheetForm
+from django.contrib.auth.models import User
 
 
 class TimeSlotTests(TestCase):
@@ -98,6 +99,51 @@ class SaveScheduleTests(TestCase):
     def tearDownClass(cls):
         cls.fp.close()
         super().tearDownClass()
+
+
+class APIEndpointTests(TestCase):
+    @classmethod
+    def setUp(self):
+        self.client = Client()
+        self.start_date = "2022-07-07"
+        self.end_date = "2022-07-08"
+        self.schedule_list = [
+            {
+                "campaign": "Telkom",
+                "material": {"download_url": "", "type": "REC"},
+                "scheduled": "2022-07-07:07:40",
+            }
+        ]
+        self.url = f"/api/v1/schedule/?start={self.start_date}&end={self.end_date}"
+
+        campaign = Campaign.objects.create(client="Telkom", ad_agency="Telkom agency")
+        self.fp = open("README.md")
+        self.booking_sheet = BookingSheet(
+            ad_type="REC",
+            start_date=datetime.date(year=2022, month=7, day=7),
+            end_date=datetime.date(year=2022, month=7, day=8),
+            campaign=campaign,
+            booking_sheet=File(self.fp),
+            cost=23000,
+        )
+        self.booking_sheet.save()
+
+        self.time_slot = TimeSlot(time=datetime.time(hour=7, minute=40))
+        self.time_slot.save()
+
+        self.bookedday = BookedDay(
+            date="2022-07-07", timeslot=self.time_slot, bookingsheet=self.booking_sheet
+        )
+        self.bookedday.save()
+
+    def test_endpoint(self):
+        user = User.objects.create_superuser(
+            "test", email="test@example.com", password="test"
+        )
+        self.client.login(username="test", password="test")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertCountEqual(response.json(), self.schedule_list)
 
 
 class BookingSheetTests(TestCase):

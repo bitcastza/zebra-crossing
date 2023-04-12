@@ -18,10 +18,16 @@ from django.urls import reverse
 
 from .models import BookingSheet, Campaign, Material, TimeSlot, BookedDay
 from .forms import BookingSheetForm, CampaignForm, MaterialForm
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 
 class CampaignView(mixins.LoginRequiredMixin, DetailView):
     model = Campaign
+
+    def schedule_data(self, **kwargs):
+        sheet = BookingSheet.objects.filter(campaign=self.get_object())[0]
+        return sheet
 
     def get_context_data(self, **kwargs):
         sheet = BookingSheet.objects.filter(campaign=self.get_object())[0]
@@ -72,6 +78,27 @@ class CampaignView(mixins.LoginRequiredMixin, DetailView):
 
 class BookingView(mixins.LoginRequiredMixin, DetailView):
     model = BookingSheet
+
+
+class ScheduleList(mixins.LoginRequiredMixin, APIView):
+    def get(self, request):
+        start_date = request.GET.get("start")
+        end_date = request.GET.get("end")
+        schedule_list = []
+        if start_date is None or end_date is None:
+            return HttpResponseBadRequest(
+                "Please check that your start and end date are valid and present",
+                status=400,
+            )
+        schedule = BookedDay.objects.filter(date__range=[start_date, end_date])
+        for item in schedule:
+            schedule_item = {
+                "campaign": item.bookingsheet.campaign.client,
+                "material": {"download_url": "", "type": item.bookingsheet.ad_type},
+                "scheduled": f"{item.date}:{item.timeslot}",
+            }
+            schedule_list.append(schedule_item)
+        return Response(schedule_list)
 
 
 @login_required

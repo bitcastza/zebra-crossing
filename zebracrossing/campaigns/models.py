@@ -134,7 +134,7 @@ class Campaign(models.Model):
         today = date.today()
         start_date = self.start_date
         end_date = self.end_date
-        if start_date == None or end_date == None:
+        if start_date is None or end_date is None:
             return False
         return start_date <= today and end_date >= today
 

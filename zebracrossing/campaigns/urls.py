@@ -8,6 +8,7 @@ urlpatterns = [
     path("<int:pk>/schedule/save", views.save_schedule, name="save_schedule"),
     path("add_campaign/", views.CampaignCreate.as_view(), name="add_campaign"),
     path("<int:pk>/", views.CampaignView.as_view(), name="detail"),
+    path("api/v1/schedule/", views.ScheduleList.as_view()),
     path(
         "<int:campaign_id>/add_booking/",
         views.BookingSheetCreate.as_view(),
